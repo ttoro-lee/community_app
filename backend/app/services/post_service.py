@@ -139,6 +139,28 @@ def update_post(db: Session, post_id: int, post_data: PostUpdate, user_id: int) 
     return post
 
 
+def build_post_list_item(post: Post, db: Session, current_user=None) -> dict:
+    """Post 객체를 PostListResponse 형태의 dict로 변환"""
+    like_count = db.query(func.count(Like.id)).filter(Like.post_id == post.id).scalar()
+    comment_count = db.query(func.count(Comment.id)).filter(
+        Comment.post_id == post.id, Comment.is_deleted == False
+    ).scalar()
+    return {
+        "id": post.id,
+        "title": post.title,
+        "content": post.content,
+        "user_id": post.user_id,
+        "view_count": post.view_count,
+        "is_pinned": post.is_pinned,
+        "is_notice": post.is_notice,
+        "created_at": post.created_at,
+        "author": post.author,
+        "category": post.category,
+        "like_count": like_count,
+        "comment_count": comment_count,
+    }
+
+
 def delete_post(db: Session, post_id: int, user_id: int) -> None:
     post = db.query(Post).filter(Post.id == post_id, Post.is_deleted == False).first()
     if not post:

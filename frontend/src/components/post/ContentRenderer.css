@@ -1,0 +1,54 @@
+.content-renderer {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.content-renderer p {
+  margin-bottom: 12px;
+  white-space: pre-wrap;
+}
+.content-renderer p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── 이미지 ─────────────────────────────────────────────────────────────── */
+.content-image-wrap {
+  margin: 16px 0;
+}
+
+.content-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  display: block;
+  cursor: zoom-in;
+  transition: opacity 0.2s;
+}
+.content-image:hover {
+  opacity: 0.92;
+}
+
+/* ── YouTube 영상 (16:9 반응형) ─────────────────────────────────────────── */
+.content-video-wrap {
+  margin: 16px 0;
+}
+
+.content-video-inner {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 */
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+}
+
+.content-video-inner iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}

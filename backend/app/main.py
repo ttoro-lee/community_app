@@ -1,13 +1,16 @@
 import logging
 import time
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text, inspect
 from app.core.config import settings
 from app.core.logging import setup_logging
 from app.db.database import Base, engine
 from app.routers import users, posts, comments, likes, categories, admin
+from app.routers import upload
 from app.services.category_service import seed_default_categories
 from app.services.admin_service import seed_super_admin
 from app.db.database import SessionLocal
@@ -142,6 +145,12 @@ app.include_router(posts.router, prefix="/api")
 app.include_router(comments.router, prefix="/api")
 app.include_router(likes.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
+app.include_router(upload.router, prefix="/api")
+
+# 업로드된 이미지 정적 파일 서빙
+_uploads_dir = Path(__file__).parent.parent / "storage" / "uploads"
+_uploads_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/api/uploads", StaticFiles(directory=str(_uploads_dir)), name="uploads")
 
 
 @app.on_event("startup")

@@ -1,5 +1,11 @@
-.profile-page { display: flex; flex-direction: column; gap: 16px; }
+/* ── 페이지 레이아웃 ──────────────────────────────── */
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
+/* ── 헤더 카드 ───────────────────────────────────── */
 .profile-header-card {
   background: linear-gradient(135deg, var(--primary) 0%, #818cf8 100%);
   border-radius: var(--radius-lg);
@@ -28,20 +34,69 @@
 }
 .profile-avatar-lg img { width: 100%; height: 100%; object-fit: cover; }
 
-.profile-name { font-size: 24px; font-weight: 700; }
-.profile-username { font-size: 14px; opacity: 0.8; margin-top: 2px; }
-.profile-joined { font-size: 13px; opacity: 0.7; margin-top: 6px; }
-.profile-bio { font-size: 14px; opacity: 0.9; margin-top: 8px; line-height: 1.5; }
+.profile-name    { font-size: 24px; font-weight: 700; }
+.profile-username{ font-size: 14px; opacity: 0.8; margin-top: 2px; }
+.profile-joined  { font-size: 13px; opacity: 0.7; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+.profile-bio     { font-size: 14px; opacity: 0.9; margin-top: 8px; line-height: 1.5; }
 
-.profile-edit-card {
+/* ── 탭 네비게이션 ───────────────────────────────── */
+.profile-tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 6px;
+  box-shadow: var(--shadow-sm);
+}
+
+.profile-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 12px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.profile-tab:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.profile-tab.active {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 2px 6px rgba(99,102,241,0.35);
+}
+.profile-tab.danger.active {
+  background: var(--danger);
+  box-shadow: 0 2px 6px rgba(239,68,68,0.35);
+}
+.profile-tab.danger:not(.active):hover {
+  color: var(--danger);
+  background: rgba(239,68,68,0.07);
+}
+
+/* ── 컨텐츠 카드 ─────────────────────────────────── */
+.profile-content-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 28px 32px;
   box-shadow: var(--shadow-sm);
+  min-height: 320px;
 }
 
-.profile-edit-title {
+/* ── 공통 탭 헤더 ────────────────────────────────── */
+.tab-title {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -50,18 +105,179 @@
   margin-bottom: 20px;
   color: var(--text-primary);
 }
+.tab-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.tab-count {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.tab-loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.tab-empty {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
 
-.profile-form { display: flex; flex-direction: column; gap: 16px; }
+/* ── 내가 쓴 글 탭 ──────────────────────────────── */
+.my-post-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
 
-.profile-actions {
+.my-post-item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.my-post-item:last-child { border-bottom: none; }
+
+.my-post-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-primary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.15s;
+}
+.my-post-title:hover { color: var(--primary); }
+
+.my-post-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.my-post-badge.notice  { background: rgba(239,68,68,0.12); color: #ef4444; }
+.my-post-badge.pinned  { background: rgba(99,102,241,0.12); color: var(--primary); }
+
+.my-post-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.my-post-category {
+  font-size: 12px;
+  color: var(--primary);
+  background: rgba(99,102,241,0.1);
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+.my-post-stat {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.my-post-date {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.tab-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+.page-info { font-size: 13px; color: var(--text-secondary); }
+
+/* ── 폼 공통 ─────────────────────────────────────── */
+.tab-form-wrap { max-width: 520px; }
+
+.profile-page .profile-form { display: flex; flex-direction: column; gap: 16px; }
+
+.profile-page .form-group { display: flex; flex-direction: column; gap: 6px; }
+
+.profile-page .form-label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.profile-page .required { color: var(--danger); line-height: 1; }
+
+.profile-page .form-input {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  transition: border-color 0.15s;
+  font-family: inherit;
+  resize: vertical;
+}
+.profile-page .form-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.12); }
+.profile-page .form-input:disabled { background: var(--bg-hover); color: var(--text-muted); cursor: not-allowed; }
+
+.profile-page .char-count { font-size: 12px; color: var(--text-muted); text-align: right; }
+
+.profile-page .form-actions {
   display: flex;
   align-items: center;
   gap: 10px;
   padding-top: 8px;
   border-top: 1px solid var(--border);
-  justify-content: space-between;
 }
 
+/* ── 비밀번호 매치 표시 ──────────────────────────── */
+.pw-match { font-size: 12px; font-weight: 600; }
+.pw-match.ok  { color: #22c55e; }
+.pw-match.ng  { color: var(--danger); }
+
+/* ── 계정 탈퇴 위험 영역 ─────────────────────────── */
+.danger-title { color: var(--danger); }
+
+.danger-box {
+  background: rgba(239,68,68,0.06);
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+}
+.danger-notice { font-size: 14px; color: #dc2626; font-weight: 600; margin-bottom: 8px; }
+.danger-list {
+  margin: 0;
+  padding-left: 18px;
+}
+.danger-list li { font-size: 13px; color: var(--text-secondary); margin-bottom: 4px; }
+
+.confirm-hint { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+
+/* ── 반응형 ──────────────────────────────────────── */
 @media (max-width: 640px) {
   .profile-header-card { flex-direction: column; text-align: center; padding: 24px; }
+  .profile-tabs { gap: 2px; }
+  .profile-tab { font-size: 12px; padding: 8px 6px; gap: 4px; }
+  .profile-content-card { padding: 20px 16px; }
+  .my-post-date { margin-left: 0; }
 }

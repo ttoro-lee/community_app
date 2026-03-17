@@ -69,3 +69,18 @@ class Token(BaseModel):
 class LoginRequest(BaseModel):
     username: str
     password: str
+
+
+class PasswordChange(BaseModel):
+    current_password: str
+    new_password: str
+
+    @validator("new_password")
+    def password_min_length(cls, v):
+        if len(v) < 8:
+            raise ValueError("비밀번호는 최소 8자 이상이어야 합니다.")
+        return v
+
+
+class DeleteAccount(BaseModel):
+    password: str

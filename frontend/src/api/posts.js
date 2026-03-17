@@ -17,3 +17,8 @@ export const toggleCommentLike = (commentId) => client.post(`/likes/comments/${c
 export const getCategories = () => client.get('/categories')
 
 export const getNotices = () => client.get('/posts/notices').then((r) => r.data)
+
+export const uploadImage = (formData) =>
+  client.post('/upload/image', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
