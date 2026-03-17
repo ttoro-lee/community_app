@@ -201,7 +201,7 @@ export default function PostDetailPage() {
       <section className="comments-section">
         <h2 className="comments-title">
           <MessageCircle size={18} />
-          댓글 <span className="comment-count">{comments.length}</span>
+          댓글 <span className="comment-count">{post.comment_count ?? comments.length}</span>
         </h2>
 
         {user ? (

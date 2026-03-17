@@ -8,7 +8,13 @@ import { adminDeleteComment } from '../../api/admin'
 import toast from 'react-hot-toast'
 import './CommentItem.css'
 
-export default function CommentItem({ comment, onRefresh, depth = 0 }) {
+/**
+ * @param {object}  comment         - 댓글 데이터 (replies 포함)
+ * @param {func}    onRefresh       - 댓글 목록 새로고침
+ * @param {number}  depth           - 현재 댓글의 깊이 (0 = 최상위)
+ * @param {string}  parentNickname  - 부모 댓글 작성자 닉네임 (대댓글일 때 @멘션용)
+ */
+export default function CommentItem({ comment, onRefresh, depth = 0, parentNickname = null }) {
   const { user } = useAuth()
   const [liked, setLiked] = useState(comment.is_liked)
   const [likeCount, setLikeCount] = useState(comment.like_count)
@@ -16,6 +22,7 @@ export default function CommentItem({ comment, onRefresh, depth = 0 }) {
   const [replyText, setReplyText] = useState('')
   const [editing, setEditing] = useState(false)
   const [editText, setEditText] = useState(comment.content)
+  // 최상위 댓글만 접기/펼치기 가능
   const [showReplies, setShowReplies] = useState(true)
 
   const timeAgo = formatDistanceToNow(new Date(comment.created_at), {
@@ -78,9 +85,11 @@ export default function CommentItem({ comment, onRefresh, depth = 0 }) {
   const isOwner = user?.id === comment.user_id
   const isAdmin = user?.is_admin && !isOwner
 
+  // CSS depth는 최대 5까지만 (시각적 들여쓰기 과도한 것 방지)
+  const depthClass = `depth-${Math.min(depth, 5)}`
+
   return (
-    <div className={`comment-item depth-${depth}`}>
-      {depth > 0 && <div className="reply-line" />}
+    <div className={`comment-item ${depthClass}`}>
       <div className="comment-body">
         <div className="comment-header">
           <div className="comment-author">
@@ -90,18 +99,18 @@ export default function CommentItem({ comment, onRefresh, depth = 0 }) {
             <span className="comment-nickname">{comment.author?.nickname}</span>
             <span className="comment-time">{timeAgo}</span>
           </div>
-          {isOwner && !comment.is_deleted && (
-            <div className="comment-actions">
-              <button className="action-btn" onClick={() => setEditing(!editing)}>
-                <Pencil size={13} />
-              </button>
-              <button className="action-btn danger" onClick={handleDelete}>
-                <Trash2 size={13} />
-              </button>
-            </div>
-          )}
-          {isAdmin && !comment.is_deleted && (
-            <div className="comment-actions">
+          <div className="comment-actions">
+            {isOwner && !comment.is_deleted && (
+              <>
+                <button className="action-btn" onClick={() => setEditing(!editing)}>
+                  <Pencil size={13} />
+                </button>
+                <button className="action-btn danger" onClick={handleDelete}>
+                  <Trash2 size={13} />
+                </button>
+              </>
+            )}
+            {isAdmin && !comment.is_deleted && (
               <button
                 className="action-btn danger"
                 title="관리자 삭제"
@@ -109,8 +118,8 @@ export default function CommentItem({ comment, onRefresh, depth = 0 }) {
               >
                 <ShieldAlert size={13} />
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {editing ? (
@@ -128,6 +137,10 @@ export default function CommentItem({ comment, onRefresh, depth = 0 }) {
           </div>
         ) : (
           <p className={`comment-content ${comment.is_deleted ? 'deleted' : ''}`}>
+            {/* 대댓글이면 @부모닉네임 표시 */}
+            {!comment.is_deleted && parentNickname && (
+              <span className="comment-mention">@{parentNickname}&nbsp;</span>
+            )}
             {comment.is_deleted ? '삭제된 댓글입니다.' : comment.content}
           </p>
         )}
@@ -141,7 +154,9 @@ export default function CommentItem({ comment, onRefresh, depth = 0 }) {
               <Heart size={13} fill={liked ? 'currentColor' : 'none'} />
               {likeCount > 0 && likeCount}
             </button>
-            {depth === 0 && user && (
+
+            {/* 모든 depth에서 답글 버튼 표시 */}
+            {user && (
               <button
                 className="reply-btn"
                 onClick={() => setShowReply(!showReply)}
@@ -150,6 +165,8 @@ export default function CommentItem({ comment, onRefresh, depth = 0 }) {
                 답글
               </button>
             )}
+
+            {/* 접기/펼치기는 최상위(depth=0)만 */}
             {depth === 0 && comment.replies?.length > 0 && (
               <button
                 className="toggle-replies-btn"
@@ -162,8 +179,13 @@ export default function CommentItem({ comment, onRefresh, depth = 0 }) {
           </div>
         )}
 
+        {/* 답글 입력창 */}
         {showReply && (
           <div className="reply-input-area">
+            <div className="reply-input-target">
+              <Reply size={12} />
+              <span>@{comment.author?.nickname}</span>에게 답글
+            </div>
             <textarea
               className="form-input"
               placeholder="답글을 입력하세요..."
@@ -179,14 +201,16 @@ export default function CommentItem({ comment, onRefresh, depth = 0 }) {
         )}
       </div>
 
-      {depth === 0 && showReplies && comment.replies?.length > 0 && (
+      {/* 대댓글 목록 — depth=0은 showReplies 상태 따름, 이하는 항상 표시 */}
+      {(depth === 0 ? showReplies : true) && comment.replies?.length > 0 && (
         <div className="replies">
           {comment.replies.map((reply) => (
             <CommentItem
               key={reply.id}
               comment={reply}
               onRefresh={onRefresh}
-              depth={1}
+              depth={depth + 1}
+              parentNickname={comment.author?.nickname}
             />
           ))}
         </div>
