@@ -1,0 +1,29 @@
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-body {
+  display: grid;
+  /* 사이드바: 최소 200px ~ 최대 280px, 본문: 나머지 전체 채움 */
+  grid-template-columns: clamp(200px, 20%, 280px) minmax(0, 1fr);
+  gap: clamp(16px, 2vw, 28px);
+  padding-top: 24px;
+  padding-bottom: 48px;
+  align-items: start;
+  width: 100%;
+}
+
+.layout-main {
+  min-width: 0; /* grid 자식이 overflow 되지 않도록 */
+}
+
+/* 태블릿 이하: 사이드바 숨기고 단일 컬럼 전환 */
+@media (max-width: 900px) {
+  .layout-body {
+    grid-template-columns: 1fr;
+    padding-top: 16px;
+    gap: 16px;
+  }
+}

@@ -1,0 +1,140 @@
+.comment-item {
+  position: relative;
+}
+
+.comment-item.depth-0 {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.comment-item.depth-0:last-child { border-bottom: none; }
+
+.comment-item.depth-1 {
+  padding: 12px 0 0 0;
+  position: relative;
+}
+
+.reply-line {
+  position: absolute;
+  left: -20px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+  border-radius: 1px;
+}
+
+.comment-body { padding-left: 0; }
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.comment-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar-xs {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), #818cf8);
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.comment-nickname {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.comment-time {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.comment-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  padding: 4px 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.action-btn:hover { background: var(--secondary); color: var(--text-secondary); }
+.action-btn.danger:hover { background: #fef2f2; color: var(--danger); }
+
+.comment-content {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.comment-content.deleted {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.comment-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.like-btn, .reply-btn, .toggle-replies-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.like-btn:hover, .reply-btn:hover, .toggle-replies-btn:hover {
+  background: var(--secondary);
+  color: var(--text-secondary);
+}
+.like-btn.liked {
+  color: var(--danger);
+}
+
+.reply-input-area {
+  margin-top: 10px;
+  padding: 12px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+}
+
+.edit-area { margin-top: 8px; }
+
+.replies {
+  margin-left: 24px;
+  padding-left: 20px;
+  border-left: 2px solid var(--border);
+  margin-top: 4px;
+}
