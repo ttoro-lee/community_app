@@ -44,3 +44,11 @@ class PaginatedUsers(BaseModel):
     page: int
     size: int
     pages: int
+
+
+class BestPostThresholdResponse(BaseModel):
+    best_post_min_likes: int
+
+
+class BestPostThresholdUpdate(BaseModel):
+    best_post_min_likes: int

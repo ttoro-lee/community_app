@@ -95,6 +95,14 @@ def run_migrations():
         """))
         logger.info("공지사항 카테고리 게시글 is_notice 일괄 보정 완료")
 
+        # ── site_settings 테이블 기본값 삽입 ─────────────────────────────────
+        conn.execute(text("""
+            INSERT INTO site_settings (key, value)
+            VALUES ('best_post_min_likes', '10')
+            ON CONFLICT (key) DO NOTHING
+        """))
+        logger.info("site_settings 기본값 보장 완료")
+
         if not added and not added_posts and "admin_only" in existing_cat_cols:
             logger.info("DB 마이그레이션 완료 — 변경 사항 없음")
 

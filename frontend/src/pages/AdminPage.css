@@ -434,3 +434,70 @@
   transition: background 0.15s;
 }
 .btn-success:hover { background: #15803d; }
+
+/* ─── 베스트 게시글 설정 ─────────────────────────────────────────────────────── */
+
+.best-setting-box {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.best-setting-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.best-setting-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.best-setting-label {
+  flex-shrink: 0;
+}
+
+.best-setting-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.best-setting-input {
+  width: 100px;
+  text-align: center;
+}
+
+.best-setting-unit {
+  font-size: 13px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.best-setting-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+  align-self: flex-end;
+}
+.best-setting-btn:hover:not(:disabled) { background: var(--primary-dark, #4f46e5); }
+.best-setting-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.best-setting-btn.saved { background: #16a34a; }
+
+.best-setting-current {
+  font-size: 13px;
+  color: var(--text-muted);
+}

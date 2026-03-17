@@ -11,6 +11,8 @@ from app.schemas.admin import (
     SuspendRequest,
     ToggleAdminRequest,
     UserAdminView,
+    BestPostThresholdResponse,
+    BestPostThresholdUpdate,
 )
 from app.schemas.post import NoticeItem
 from app.services import admin_service
@@ -120,3 +122,24 @@ def admin_delete_comment(
     admin: User = Depends(_require_admin),
 ):
     admin_service.admin_delete_comment(db, comment_id)
+
+
+# ─── 베스트 게시글 기준 설정 ──────────────────────────────────────────────────
+
+@router.get("/settings/best-post-threshold", response_model=BestPostThresholdResponse)
+def get_best_post_threshold(
+    db: Session = Depends(get_db),
+    admin: User = Depends(_require_admin),
+):
+    threshold = admin_service.get_best_post_threshold(db)
+    return {"best_post_min_likes": threshold}
+
+
+@router.patch("/settings/best-post-threshold", response_model=BestPostThresholdResponse)
+def update_best_post_threshold(
+    body: BestPostThresholdUpdate,
+    db: Session = Depends(get_db),
+    admin: User = Depends(_require_admin),
+):
+    threshold = admin_service.set_best_post_threshold(db, body.best_post_min_likes)
+    return {"best_post_min_likes": threshold}

@@ -1,7 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { useQuery } from 'react-query'
 import { getCategories } from '../../api/posts'
-import { Home, TrendingUp } from 'lucide-react'
+import { Home, TrendingUp, Trophy } from 'lucide-react'
 import './Sidebar.css'
 
 export default function Sidebar() {
@@ -22,6 +22,10 @@ export default function Sidebar() {
           <Link to="/board" className={`sidebar-item ${location.pathname === '/board' && !categorySlug ? 'active' : ''}`}>
             <TrendingUp size={16} />
             전체 게시글
+          </Link>
+          <Link to="/board/best" className={`sidebar-item ${categorySlug === 'best' ? 'active' : ''}`}>
+            <Trophy size={16} />
+            베스트 게시글
           </Link>
         </nav>
       </div>

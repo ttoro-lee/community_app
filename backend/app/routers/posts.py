@@ -25,13 +25,25 @@ def get_posts(
     return post_service.get_posts(db, page, size, category_id, search, user_id)
 
 
-# !! /notices 는 /{post_id} 보다 반드시 앞에 선언해야 함
+# !! /notices, /best 는 /{post_id} 보다 반드시 앞에 선언해야 함
 # FastAPI는 선언 순서대로 경로를 매칭하므로, 뒤에 두면
-# "notices"가 정수 post_id로 파싱되어 422 에러 발생
+# 문자열이 정수 post_id로 파싱되어 422 에러 발생
 @router.get("/notices", response_model=List[NoticeItem])
 def get_notices(db: Session = Depends(get_db)):
     """공지사항 목록 조회 (최대 10개, 로그인 불필요)"""
     return admin_service.get_notices(db)
+
+
+@router.get("/best", response_model=PaginatedPosts)
+def get_best_posts(
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_user),
+):
+    """베스트 게시글 목록 조회 (좋아요 기준 이상, 공지 제외)"""
+    user_id = current_user.id if current_user else None
+    return admin_service.get_best_posts(db, page, size, user_id)
 
 
 @router.get("/{post_id}", response_model=PostResponse)

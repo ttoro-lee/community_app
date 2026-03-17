@@ -38,3 +38,13 @@ export const adminDeleteComment = (commentId) =>
 
 export const toggleNotice = (postId, register) =>
   client.patch(`/admin/posts/${postId}/notice`, { register }).then((r) => r.data)
+
+// ─── 베스트 게시글 기준 설정 ──────────────────────────────────────────────────
+
+export const getBestPostThreshold = () =>
+  client.get('/admin/settings/best-post-threshold').then((r) => r.data)
+
+export const updateBestPostThreshold = (minLikes) =>
+  client
+    .patch('/admin/settings/best-post-threshold', { best_post_min_likes: minLikes })
+    .then((r) => r.data)

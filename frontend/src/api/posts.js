@@ -18,6 +18,8 @@ export const getCategories = () => client.get('/categories')
 
 export const getNotices = () => client.get('/posts/notices').then((r) => r.data)
 
+export const getBestPosts = (params) => client.get('/posts/best', { params })
+
 export const uploadImage = (formData) =>
   client.post('/upload/image', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
