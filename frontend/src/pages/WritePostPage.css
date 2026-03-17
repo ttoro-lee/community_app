@@ -44,6 +44,62 @@
   line-height: 1.7;
 }
 
+/* ── 미디어 툴바 ─────────────────────────────────────────────────────────── */
+.media-toolbar {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.media-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 5px 10px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.media-btn:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.media-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.youtube-input-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-bottom: none;
+}
+.youtube-input-row .form-input {
+  flex: 1;
+  border-radius: var(--radius-sm);
+}
+
+/* 툴바 아래 textarea는 위쪽 모서리 제거 */
+.media-toolbar ~ .form-input.content-textarea {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
 .write-actions {
   display: flex;
   justify-content: flex-end;

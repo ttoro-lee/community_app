@@ -5,6 +5,7 @@ import { getPost, getComments, createComment, togglePostLike, deletePost } from 
 import { adminDeletePost, toggleNotice } from '../api/admin'
 import { useAuth } from '../contexts/AuthContext'
 import CommentItem from '../components/comment/CommentItem'
+import ContentRenderer from '../components/post/ContentRenderer'
 import { Heart, Eye, MessageCircle, Pencil, Trash2, ArrowLeft, ShieldAlert, Pin, PinOff } from 'lucide-react'
 import { formatDistanceToNow, format } from 'date-fns'
 import { ko } from 'date-fns/locale'
@@ -177,9 +178,7 @@ export default function PostDetailPage() {
         <div className="divider" />
 
         <div className="post-content">
-          {post.content.split('\n').map((line, i) => (
-            <p key={i}>{line || <br />}</p>
-          ))}
+          <ContentRenderer content={post.content} />
         </div>
 
         <div className="divider" />
