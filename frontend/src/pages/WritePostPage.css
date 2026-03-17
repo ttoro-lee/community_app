@@ -1,0 +1,53 @@
+.write-page { display: flex; flex-direction: column; gap: 16px; }
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px 0;
+  font-family: inherit;
+  transition: color 0.15s;
+}
+.back-btn:hover { color: var(--primary); }
+
+.write-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: clamp(20px, 3vw, 40px);
+  box-shadow: var(--shadow-sm);
+}
+
+.write-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 24px;
+}
+
+.write-form { display: flex; flex-direction: column; gap: 20px; }
+
+.char-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: right;
+  margin-top: 4px;
+}
+
+.content-textarea {
+  min-height: 320px;
+  line-height: 1.7;
+}
+
+.write-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
