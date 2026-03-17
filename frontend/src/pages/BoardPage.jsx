@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useQuery } from 'react-query'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { getPosts, getCategories } from '../api/posts'
+import { getPosts, getCategories, getBestPosts } from '../api/posts'
 import PostCard from '../components/board/PostCard'
 import NoticeBar from '../components/board/NoticeBar'
-import { Search, PenSquare, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Search, PenSquare, ChevronLeft, ChevronRight, Trophy } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import './BoardPage.css'
+
+const BEST_SLUG = 'best'
 
 export default function BoardPage() {
   const { categorySlug } = useParams()
@@ -16,21 +18,27 @@ export default function BoardPage() {
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
 
+  const isBest = categorySlug === BEST_SLUG
+
   const { data: categories = [] } = useQuery('categories', () =>
     getCategories().then((r) => r.data)
   )
 
-  const currentCategory = categories.find((c) => c.slug === categorySlug)
+  const currentCategory = isBest ? null : categories.find((c) => c.slug === categorySlug)
 
   const { data, isLoading } = useQuery(
     ['posts', page, categorySlug, search],
-    () =>
-      getPosts({
+    () => {
+      if (isBest) {
+        return getBestPosts({ page, size: 15 }).then((r) => r.data)
+      }
+      return getPosts({
         page,
         size: 15,
         category_id: currentCategory?.id,
         search: search || undefined,
-      }).then((r) => r.data),
+      }).then((r) => r.data)
+    },
     { keepPreviousData: true }
   )
 
@@ -40,7 +48,9 @@ export default function BoardPage() {
     setPage(1)
   }
 
-  const pageTitle = currentCategory
+  const pageTitle = isBest
+    ? '🏆 베스트 게시글'
+    : currentCategory
     ? `${currentCategory.icon} ${currentCategory.name}`
     : '전체 게시글'
 
@@ -49,20 +59,23 @@ export default function BoardPage() {
       <div className="board-header">
         <h1 className="board-title">{pageTitle}</h1>
         <div className="board-header-actions">
-          <form className="search-form" onSubmit={handleSearch}>
-            <div className="search-input-wrap">
-              <Search size={15} className="search-icon" />
-              <input
-                type="text"
-                className="search-input"
-                placeholder="검색..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-              />
-            </div>
-            <button type="submit" className="btn btn-secondary btn-sm">검색</button>
-          </form>
-          {user && (!currentCategory?.admin_only || user.is_admin) && (
+          {/* 베스트 게시글 탭에서는 검색 숨김 */}
+          {!isBest && (
+            <form className="search-form" onSubmit={handleSearch}>
+              <div className="search-input-wrap">
+                <Search size={15} className="search-icon" />
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="검색..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                />
+              </div>
+              <button type="submit" className="btn btn-secondary btn-sm">검색</button>
+            </form>
+          )}
+          {user && !isBest && (!currentCategory?.admin_only || user.is_admin) && (
             <button
               className="btn btn-primary btn-sm"
               onClick={() => navigate('/write')}
@@ -79,8 +92,17 @@ export default function BoardPage() {
         <Link
           to="/board"
           className={`cat-tab ${!categorySlug ? 'active' : ''}`}
+          onClick={() => setPage(1)}
         >
           전체
+        </Link>
+        <Link
+          to="/board/best"
+          className={`cat-tab best-tab ${isBest ? 'active' : ''}`}
+          onClick={() => setPage(1)}
+        >
+          <Trophy size={13} style={{ marginRight: 3, verticalAlign: 'middle' }} />
+          베스트
         </Link>
         {categories.map((cat) => (
           <Link
@@ -94,8 +116,16 @@ export default function BoardPage() {
         ))}
       </div>
 
-      {/* 공지사항 배너 — 공지사항 카테고리 페이지에서는 숨김 */}
-      {!currentCategory?.admin_only && <NoticeBar />}
+      {/* 공지사항 배너 — 공지사항 카테고리, 베스트 페이지에서는 숨김 */}
+      {!currentCategory?.admin_only && !isBest && <NoticeBar />}
+
+      {/* 베스트 게시글 안내 문구 */}
+      {isBest && (
+        <div className="best-notice">
+          <Trophy size={14} />
+          좋아요를 일정 수 이상 받은 인기 게시글 모음입니다.
+        </div>
+      )}
 
       {/* Post List */}
       <div className="posts-list">
@@ -107,7 +137,10 @@ export default function BoardPage() {
           data.items.map((post) => <PostCard key={post.id} post={post} />)
         ) : (
           <div className="empty-state">
-            <p>게시글이 없습니다.</p>
+            {isBest
+              ? <p>아직 베스트 게시글 기준을 충족한 글이 없습니다.</p>
+              : <p>게시글이 없습니다.</p>
+            }
           </div>
         )}
       </div>

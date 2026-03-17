@@ -8,6 +8,8 @@ from app.models.user import User
 from app.models.post import Post
 from app.models.comment import Comment
 from app.models.category import Category
+from app.models.like import Like
+from app.models.settings import SiteSettings
 
 NOTICE_MAX = 10   # 동시에 등록 가능한 최대 공지 수
 
@@ -170,6 +172,103 @@ def admin_delete_comment(db: Session, comment_id: int) -> None:
         raise HTTPException(status_code=404, detail="댓글을 찾을 수 없습니다.")
     comment.is_deleted = True
     db.commit()
+
+
+# ─── 사이트 설정 ──────────────────────────────────────────────────────────────
+
+def get_site_setting(db: Session, key: str, default: str = "") -> str:
+    setting = db.query(SiteSettings).filter(SiteSettings.key == key).first()
+    return setting.value if setting else default
+
+
+def set_site_setting(db: Session, key: str, value: str) -> SiteSettings:
+    setting = db.query(SiteSettings).filter(SiteSettings.key == key).first()
+    if setting:
+        setting.value = value
+    else:
+        setting = SiteSettings(key=key, value=value)
+        db.add(setting)
+    db.commit()
+    db.refresh(setting)
+    return setting
+
+
+def get_best_post_threshold(db: Session) -> int:
+    return int(get_site_setting(db, "best_post_min_likes", "10"))
+
+
+def set_best_post_threshold(db: Session, threshold: int) -> int:
+    if threshold < 1:
+        raise HTTPException(status_code=400, detail="최소 좋아요 수는 1 이상이어야 합니다.")
+    set_site_setting(db, "best_post_min_likes", str(threshold))
+    return threshold
+
+
+def get_best_posts(
+    db: Session,
+    page: int = 1,
+    size: int = 20,
+    current_user_id: int = None,
+) -> dict:
+    threshold = get_best_post_threshold(db)
+
+    # 좋아요 수가 threshold 이상인 공지 제외 게시글 조회
+    like_count_subq = (
+        db.query(Like.post_id, func.count(Like.id).label("like_count"))
+        .group_by(Like.post_id)
+        .subquery()
+    )
+
+    query = (
+        db.query(Post)
+        .outerjoin(like_count_subq, Post.id == like_count_subq.c.post_id)
+        .filter(
+            Post.is_deleted == False,
+            Post.is_notice == False,
+            func.coalesce(like_count_subq.c.like_count, 0) >= threshold,
+        )
+    )
+
+    total = query.count()
+    posts = (
+        query
+        .order_by(
+            func.coalesce(like_count_subq.c.like_count, 0).desc(),
+            Post.created_at.desc(),
+        )
+        .offset((page - 1) * size)
+        .limit(size)
+        .all()
+    )
+
+    result = []
+    for post in posts:
+        lc = db.query(func.count(Like.id)).filter(Like.post_id == post.id).scalar()
+        cc = db.query(func.count(Comment.id)).filter(
+            Comment.post_id == post.id, Comment.is_deleted == False
+        ).scalar()
+        result.append({
+            "id": post.id,
+            "title": post.title,
+            "content": post.content,
+            "user_id": post.user_id,
+            "view_count": post.view_count,
+            "is_pinned": post.is_pinned,
+            "is_notice": post.is_notice,
+            "created_at": post.created_at,
+            "author": post.author,
+            "category": post.category,
+            "like_count": lc,
+            "comment_count": cc,
+        })
+
+    return {
+        "items": result,
+        "total": total,
+        "page": page,
+        "size": size,
+        "pages": math.ceil(total / size) if total > 0 else 1,
+    }
 
 
 # ─── 슈퍼 관리자 초기 생성 ───────────────────────────────────────────────────

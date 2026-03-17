@@ -14,6 +14,8 @@ import {
   ShieldCheck,
   ShieldOff,
   BarChart2,
+  Trophy,
+  Save,
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import {
@@ -21,6 +23,8 @@ import {
   getAdminUsers,
   toggleAdminRole,
   suspendUser,
+  getBestPostThreshold,
+  updateBestPostThreshold,
 } from '../api/admin'
 import './AdminPage.css'
 
@@ -123,6 +127,8 @@ export default function AdminPage() {
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [suspendTarget, setSuspendTarget] = useState(null)
+  const [thresholdInput, setThresholdInput] = useState('')
+  const [thresholdSaved, setThresholdSaved] = useState(false)
 
   // 인증 로딩이 끝난 후에만 권한 확인 (훅 이후에 배치)
   useEffect(() => {
@@ -141,6 +147,36 @@ export default function AdminPage() {
     () => getAdminUsers({ page, size: 20, search }),
     { keepPreviousData: true, enabled: !!me?.is_admin }
   )
+
+  const { data: thresholdData } = useQuery(
+    'bestPostThreshold',
+    getBestPostThreshold,
+    {
+      staleTime: 60_000,
+      enabled: !!me?.is_admin,
+      onSuccess: (data) => {
+        setThresholdInput(String(data.best_post_min_likes))
+      },
+    }
+  )
+
+  const thresholdMutation = useMutation(
+    (minLikes) => updateBestPostThreshold(minLikes),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('bestPostThreshold')
+        setThresholdSaved(true)
+        setTimeout(() => setThresholdSaved(false), 2000)
+      },
+    }
+  )
+
+  const handleThresholdSave = (e) => {
+    e.preventDefault()
+    const val = parseInt(thresholdInput, 10)
+    if (isNaN(val) || val < 1) return
+    thresholdMutation.mutate(val)
+  }
 
   const toggleAdminMutation = useMutation(
     ({ userId, isAdmin }) => toggleAdminRole(userId, isAdmin),
@@ -375,6 +411,50 @@ export default function AdminPage() {
             </button>
           </div>
         )}
+      </div>
+
+      {/* 베스트 게시글 설정 */}
+      <div className="admin-section">
+        <div className="admin-section-header">
+          <h2 className="admin-section-title">
+            <Trophy size={16} />
+            베스트 게시글 설정
+          </h2>
+        </div>
+        <div className="best-setting-box">
+          <p className="best-setting-desc">
+            공지를 제외한 게시글 중 좋아요 수가 아래 기준 이상인 글이 <strong>베스트 게시글</strong> 카테고리에 자동으로 등록됩니다.
+          </p>
+          <form className="best-setting-form" onSubmit={handleThresholdSave}>
+            <label className="form-label best-setting-label">
+              최소 좋아요 수
+              <div className="best-setting-input-wrap">
+                <input
+                  type="number"
+                  className="form-input best-setting-input"
+                  min={1}
+                  value={thresholdInput}
+                  onChange={(e) => setThresholdInput(e.target.value)}
+                  placeholder="예: 10"
+                />
+                <span className="best-setting-unit">개 이상</span>
+              </div>
+            </label>
+            <button
+              type="submit"
+              className={`btn-primary btn-sm best-setting-btn ${thresholdSaved ? 'saved' : ''}`}
+              disabled={thresholdMutation.isLoading}
+            >
+              <Save size={14} />
+              {thresholdSaved ? '저장됨 ✓' : '저장'}
+            </button>
+          </form>
+          {thresholdData && (
+            <p className="best-setting-current">
+              현재 기준: <strong>{thresholdData.best_post_min_likes}개</strong> 이상
+            </p>
+          )}
+        </div>
       </div>
 
       {/* 정지 모달 */}
