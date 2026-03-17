@@ -1,3 +1,4 @@
+/* ── 댓글 기본 ─────────────────────────────────────────────────────────────── */
 .comment-item {
   position: relative;
 }
@@ -6,24 +7,31 @@
   padding: 16px 0;
   border-bottom: 1px solid var(--border);
 }
-.comment-item.depth-0:last-child { border-bottom: none; }
-
-.comment-item.depth-1 {
-  padding: 12px 0 0 0;
-  position: relative;
+.comment-item.depth-0:last-child {
+  border-bottom: none;
 }
 
-.reply-line {
-  position: absolute;
-  left: -20px;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: var(--border);
-  border-radius: 1px;
+/* depth 1 이상은 replies 컨테이너의 들여쓰기를 그대로 사용 */
+.comment-item.depth-1,
+.comment-item.depth-2,
+.comment-item.depth-3,
+.comment-item.depth-4,
+.comment-item.depth-5 {
+  padding: 10px 0 0 0;
 }
 
-.comment-body { padding-left: 0; }
+/* ── 대댓글 컨테이너: 왼쪽 선 + 들여쓰기 ──────────────────────────────────── */
+.replies {
+  margin-left: 20px;
+  padding-left: 16px;
+  border-left: 2px solid var(--border);
+  margin-top: 4px;
+}
+
+/* ── 댓글 본문 ─────────────────────────────────────────────────────────────── */
+.comment-body {
+  padding-left: 0;
+}
 
 .comment-header {
   display: flex;
@@ -82,6 +90,7 @@
 .action-btn:hover { background: var(--secondary); color: var(--text-secondary); }
 .action-btn.danger:hover { background: #fef2f2; color: var(--danger); }
 
+/* ── 댓글 내용 + @멘션 ────────────────────────────────────────────────────── */
 .comment-content {
   font-size: 14px;
   color: var(--text-primary);
@@ -94,6 +103,14 @@
   font-style: italic;
 }
 
+/* @멘션 강조 */
+.comment-mention {
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* ── 하단 액션 바 ──────────────────────────────────────────────────────────── */
 .comment-footer {
   display: flex;
   align-items: center;
@@ -123,18 +140,28 @@
   color: var(--danger);
 }
 
+/* ── 답글 입력창 ──────────────────────────────────────────────────────────── */
 .reply-input-area {
   margin-top: 10px;
   padding: 12px;
   background: var(--bg);
   border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
 }
 
+/* "누구에게 답글" 안내 텍스트 */
+.reply-input-target {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.reply-input-target span {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+/* ── 수정 영역 ─────────────────────────────────────────────────────────────── */
 .edit-area { margin-top: 8px; }
-
-.replies {
-  margin-left: 24px;
-  padding-left: 20px;
-  border-left: 2px solid var(--border);
-  margin-top: 4px;
-}

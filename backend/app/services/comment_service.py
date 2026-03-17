@@ -10,7 +10,7 @@ from typing import Optional, List
 def get_comments_by_post(
     db: Session, post_id: int, current_user_id: Optional[int] = None
 ) -> List[dict]:
-    # Get top-level comments only
+    # 최상위 댓글만 가져오고, 트리는 재귀로 구축
     comments = (
         db.query(Comment)
         .filter(
@@ -31,10 +31,10 @@ def get_comments_by_post(
                 .first()
             ) is not None
 
+        # 삭제 여부 관계없이 모든 대댓글 포함 (삭제된 경우 "삭제된 댓글입니다." 표시)
         replies = []
         for reply in sorted(comment.replies, key=lambda r: r.created_at):
-            if not reply.is_deleted:
-                replies.append(build_comment(reply))
+            replies.append(build_comment(reply))
 
         return {
             "id": comment.id,
@@ -55,13 +55,11 @@ def get_comments_by_post(
 
 
 def create_comment(db: Session, comment_data: CommentCreate, user_id: int) -> Comment:
-    # Validate parent comment if exists
     if comment_data.parent_id:
         parent = db.query(Comment).filter(Comment.id == comment_data.parent_id).first()
         if not parent:
             raise HTTPException(status_code=404, detail="부모 댓글을 찾을 수 없습니다.")
-        if parent.parent_id is not None:
-            raise HTTPException(status_code=400, detail="대댓글에는 댓글을 달 수 없습니다.")
+        # 깊이 제한 없음 — 어느 댓글에나 대댓글 가능
 
     comment = Comment(
         content=comment_data.content,
