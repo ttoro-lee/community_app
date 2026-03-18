@@ -74,6 +74,34 @@
   overflow: hidden;
 }
 
+.post-media-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 7px;
+  flex-wrap: wrap;
+}
+
+.media-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 100px;
+}
+
+.media-badge-image {
+  color: #0ea5e9;
+  background: rgba(14, 165, 233, 0.1);
+}
+
+.media-badge-video {
+  color: #f97316;
+  background: rgba(249, 115, 22, 0.1);
+}
+
 .post-card-footer {
   display: flex;
   align-items: center;

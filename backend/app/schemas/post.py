@@ -69,6 +69,19 @@ class PaginatedPosts(BaseModel):
     pages: int
 
 
+class AdjacentPostItem(BaseModel):
+    id: int
+    title: str
+
+    class Config:
+        from_attributes = True
+
+
+class AdjacentPostsResponse(BaseModel):
+    prev: Optional[AdjacentPostItem] = None
+    next: Optional[AdjacentPostItem] = None
+
+
 class NoticeItem(BaseModel):
     id: int
     title: str

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from 'react-query'
-import { getPost, getComments, createComment, togglePostLike, deletePost } from '../api/posts'
+import { getPost, getComments, createComment, togglePostLike, deletePost, getAdjacentPosts } from '../api/posts'
 import { adminDeletePost, toggleNotice } from '../api/admin'
 import { useAuth } from '../contexts/AuthContext'
 import CommentItem from '../components/comment/CommentItem'
@@ -35,6 +35,11 @@ export default function PostDetailPage() {
   const { data: comments = [], refetch: refetchComments } = useQuery(
     ['comments', postId],
     () => getComments(postId).then((r) => r.data)
+  )
+
+  const { data: adjacent } = useQuery(
+    ['adjacent', postId],
+    () => getAdjacentPosts(postId).then((r) => r.data)
   )
 
   const handleLike = async () => {
@@ -246,6 +251,24 @@ export default function PostDetailPage() {
           )}
         </div>
       </section>
+
+      {/* Adjacent Posts Navigation */}
+      {adjacent && (adjacent.prev || adjacent.next) && (
+        <nav className="adjacent-posts">
+          {adjacent.next && (
+            <Link to={`/posts/${adjacent.next.id}`} className="adjacent-post-item adjacent-next">
+              <span className="adjacent-label">다음 글</span>
+              <span className="adjacent-title">{adjacent.next.title}</span>
+            </Link>
+          )}
+          {adjacent.prev && (
+            <Link to={`/posts/${adjacent.prev.id}`} className="adjacent-post-item adjacent-prev">
+              <span className="adjacent-label">이전 글</span>
+              <span className="adjacent-title">{adjacent.prev.title}</span>
+            </Link>
+          )}
+        </nav>
+      )}
     </div>
   )
 }

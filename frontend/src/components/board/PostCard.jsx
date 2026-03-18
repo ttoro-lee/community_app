@@ -1,8 +1,41 @@
 import { Link } from 'react-router-dom'
-import { Heart, MessageCircle, Eye, Pin } from 'lucide-react'
+import { Heart, MessageCircle, Eye, Pin, ImageIcon, Video } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import './PostCard.css'
+
+function getVideoLabel(text) {
+  const t = text.trim()
+  if (/youtube\.com\/watch|youtu\.be\/|youtube\.com\/shorts\//.test(t)) return 'YouTube'
+  if (/chzzk\.naver\.com\/clips\//.test(t)) return 'Chzzk 클립'
+  if (/chzzk\.naver\.com\/live\//.test(t)) return 'Chzzk 라이브'
+  if (/chzzk\.naver\.com\/video\//.test(t)) return 'Chzzk VOD'
+  return null
+}
+
+function parseContentPreview(content) {
+  const lines = content.split('\n')
+  const textParts = []
+  let imageCount = 0
+  const videoLabels = []
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (trimmed.startsWith('[image:') && trimmed.endsWith(']')) {
+      imageCount++
+    } else {
+      const label = getVideoLabel(trimmed)
+      if (label) {
+        if (!videoLabels.includes(label)) videoLabels.push(label)
+      } else if (trimmed) {
+        textParts.push(trimmed)
+      }
+    }
+  }
+
+  const textPreview = textParts.join(' ').replace(/[#*`>\-\[\]]/g, '').slice(0, 120)
+  return { textPreview, imageCount, videoLabels }
+}
 
 export default function PostCard({ post }) {
   const timeAgo = formatDistanceToNow(new Date(post.created_at), {
@@ -10,7 +43,8 @@ export default function PostCard({ post }) {
     locale: ko,
   })
 
-  const preview = post.content.replace(/[#*`>\-\[\]]/g, '').slice(0, 120)
+  const { textPreview, imageCount, videoLabels } = parseContentPreview(post.content)
+  const hasMedia = imageCount > 0 || videoLabels.length > 0
 
   return (
     <article className={`post-card fade-in ${post.is_pinned ? 'pinned' : ''}`}>
@@ -32,7 +66,27 @@ export default function PostCard({ post }) {
 
       <Link to={`/posts/${post.id}`} className="post-card-link">
         <h2 className="post-title">{post.title}</h2>
-        {preview && <p className="post-preview">{preview}…</p>}
+        {textPreview && (
+          <p className="post-preview">
+            {textPreview}{textPreview.length >= 120 ? '…' : ''}
+          </p>
+        )}
+        {hasMedia && (
+          <div className="post-media-badges">
+            {imageCount > 0 && (
+              <span className="media-badge media-badge-image">
+                <ImageIcon size={11} />
+                사진{imageCount > 1 ? ` ${imageCount}장` : ''}
+              </span>
+            )}
+            {videoLabels.map((label) => (
+              <span key={label} className="media-badge media-badge-video">
+                <Video size={11} />
+                {label}
+              </span>
+            ))}
+          </div>
+        )}
       </Link>
 
       <div className="post-card-footer">
