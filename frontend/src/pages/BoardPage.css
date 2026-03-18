@@ -2,7 +2,7 @@
 
 .board-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
@@ -12,13 +12,6 @@
   font-size: 22px;
   font-weight: 700;
   color: var(--text-primary);
-}
-
-.board-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
 }
 
 .search-form { display: flex; align-items: center; gap: 6px; }
@@ -119,6 +112,36 @@
 .page-btn:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
 .page-btn.active { background: var(--primary); border-color: var(--primary); color: white; font-weight: 600; }
 .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* List controls: 검색 + 개수 선택 */
+.list-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.page-size-selector {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.page-size-btn {
+  height: 32px;
+  padding: 0 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.page-size-btn:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+.page-size-btn.active { background: var(--primary); border-color: var(--primary); color: white; font-weight: 600; }
 
 /* Skeleton */
 .skeleton-card {

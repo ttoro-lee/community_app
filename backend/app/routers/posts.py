@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.db.database import get_db
-from app.schemas.post import PostCreate, PostUpdate, PostResponse, PaginatedPosts, NoticeItem
+from app.schemas.post import PostCreate, PostUpdate, PostResponse, PaginatedPosts, NoticeItem, AdjacentPostsResponse
 from app.services import post_service
 from app.services import admin_service
 from app.dependencies import get_current_user, get_optional_user
@@ -72,6 +72,19 @@ def get_post(
         "like_count": like_count,
         "comment_count": comment_count,
         "is_liked": is_liked,
+    }
+
+
+@router.get("/{post_id}/adjacent", response_model=AdjacentPostsResponse)
+def get_adjacent_posts(
+    post_id: int,
+    db: Session = Depends(get_db),
+):
+    """이전 글 / 다음 글 조회"""
+    prev_post, next_post = post_service.get_adjacent_posts(db, post_id)
+    return {
+        "prev": {"id": prev_post.id, "title": prev_post.title} if prev_post else None,
+        "next": {"id": next_post.id, "title": next_post.title} if next_post else None,
     }
 
 

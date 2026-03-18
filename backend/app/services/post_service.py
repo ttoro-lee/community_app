@@ -161,6 +161,20 @@ def build_post_list_item(post: Post, db: Session, current_user=None) -> dict:
     }
 
 
+def get_adjacent_posts(db: Session, post_id: int):
+    post = db.query(Post).filter(Post.id == post_id, Post.is_deleted == False).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="게시글을 찾을 수 없습니다.")
+
+    base_query = db.query(Post).filter(Post.is_deleted == False, Post.is_notice == False)
+    if post.category_id:
+        base_query = base_query.filter(Post.category_id == post.category_id)
+
+    prev_post = base_query.filter(Post.id < post_id).order_by(desc(Post.id)).first()
+    next_post = base_query.filter(Post.id > post_id).order_by(Post.id).first()
+    return prev_post, next_post
+
+
 def delete_post(db: Session, post_id: int, user_id: int) -> None:
     post = db.query(Post).filter(Post.id == post_id, Post.is_deleted == False).first()
     if not post:

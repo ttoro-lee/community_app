@@ -14,6 +14,8 @@ export const deleteComment = (id) => client.delete(`/comments/${id}`)
 export const togglePostLike = (postId) => client.post(`/likes/posts/${postId}`)
 export const toggleCommentLike = (commentId) => client.post(`/likes/comments/${commentId}`)
 
+export const getAdjacentPosts = (postId) => client.get(`/posts/${postId}/adjacent`)
+
 export const getCategories = () => client.get('/categories')
 
 export const getNotices = () => client.get('/posts/notices').then((r) => r.data)

@@ -1,11 +1,15 @@
 import { useQuery } from 'react-query'
 import { Link } from 'react-router-dom'
 import { getPosts, getCategories } from '../api/posts'
+import { getMyPosts } from '../api/auth'
+import { useAuth } from '../contexts/AuthContext'
 import PostCard from '../components/board/PostCard'
 import { TrendingUp, ArrowRight } from 'lucide-react'
 import './HomePage.css'
 
 export default function HomePage() {
+  const { user } = useAuth()
+
   const { data: postsData, isLoading: postsLoading } = useQuery(
     'home-posts',
     () => getPosts({ page: 1, size: 8 }).then((r) => r.data)
@@ -14,6 +18,14 @@ export default function HomePage() {
   const { data: categories = [] } = useQuery('categories', () =>
     getCategories().then((r) => r.data)
   )
+
+  const { data: myPostsData } = useQuery(
+    'my-posts-check',
+    () => getMyPosts({ page: 1, size: 1 }).then((r) => r.data),
+    { enabled: !!user }
+  )
+
+  const hasWritten = !!user && myPostsData?.total > 0
 
   return (
     <div className="home-page fade-in">
@@ -25,7 +37,7 @@ export default function HomePage() {
             자유롭게 글을 쓰고, 댓글로 소통하며 커뮤니티를 만들어가세요.
           </p>
           <Link to="/write" className="btn btn-primary btn-lg">
-            첫 글 써보기 →
+            {hasWritten ? '새 글 쓰기 →' : '첫 글 써보기 →'}
           </Link>
         </div>
         <div className="hero-decoration" aria-hidden="true">

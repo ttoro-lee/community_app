@@ -15,6 +15,7 @@ export default function BoardPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
   const [search, setSearch] = useState('')
   const [searchInput, setSearchInput] = useState('')
 
@@ -27,14 +28,14 @@ export default function BoardPage() {
   const currentCategory = isBest ? null : categories.find((c) => c.slug === categorySlug)
 
   const { data, isLoading } = useQuery(
-    ['posts', page, categorySlug, search],
+    ['posts', page, pageSize, categorySlug, search],
     () => {
       if (isBest) {
-        return getBestPosts({ page, size: 15 }).then((r) => r.data)
+        return getBestPosts({ page, size: pageSize }).then((r) => r.data)
       }
       return getPosts({
         page,
-        size: 15,
+        size: pageSize,
         category_id: currentCategory?.id,
         search: search || undefined,
       }).then((r) => r.data)
@@ -48,6 +49,11 @@ export default function BoardPage() {
     setPage(1)
   }
 
+  const handlePageSize = (size) => {
+    setPageSize(size)
+    setPage(1)
+  }
+
   const pageTitle = isBest
     ? '🏆 베스트 게시글'
     : currentCategory
@@ -58,33 +64,15 @@ export default function BoardPage() {
     <div className="board-page fade-in">
       <div className="board-header">
         <h1 className="board-title">{pageTitle}</h1>
-        <div className="board-header-actions">
-          {/* 베스트 게시글 탭에서는 검색 숨김 */}
-          {!isBest && (
-            <form className="search-form" onSubmit={handleSearch}>
-              <div className="search-input-wrap">
-                <Search size={15} className="search-icon" />
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="검색..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                />
-              </div>
-              <button type="submit" className="btn btn-secondary btn-sm">검색</button>
-            </form>
-          )}
-          {user && !isBest && (!currentCategory?.admin_only || user.is_admin) && (
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={() => navigate('/write')}
-            >
-              <PenSquare size={14} />
-              글쓰기
-            </button>
-          )}
-        </div>
+        {user && !isBest && (!currentCategory?.admin_only || user.is_admin) && (
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={() => navigate('/write')}
+          >
+            <PenSquare size={14} />
+            글쓰기
+          </button>
+        )}
       </div>
 
       {/* Category tabs */}
@@ -126,6 +114,38 @@ export default function BoardPage() {
           좋아요를 일정 수 이상 받은 인기 게시글 모음입니다.
         </div>
       )}
+
+      {/* List Controls: 검색 + 개수 선택 */}
+      <div className="list-controls">
+        {!isBest ? (
+          <form className="search-form" onSubmit={handleSearch}>
+            <div className="search-input-wrap">
+              <Search size={15} className="search-icon" />
+              <input
+                type="text"
+                className="search-input"
+                placeholder="검색..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+              />
+            </div>
+            <button type="submit" className="btn btn-secondary btn-sm">검색</button>
+          </form>
+        ) : (
+          <div />
+        )}
+        <div className="page-size-selector">
+          {[5, 10, 20].map((size) => (
+            <button
+              key={size}
+              className={`page-size-btn ${pageSize === size ? 'active' : ''}`}
+              onClick={() => handlePageSize(size)}
+            >
+              {size}개
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Post List */}
       <div className="posts-list">
