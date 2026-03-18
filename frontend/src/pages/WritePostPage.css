@@ -95,9 +95,38 @@
 }
 
 /* 툴바 아래 textarea는 위쪽 모서리 제거 */
+.media-toolbar ~ .textarea-wrap .form-input.content-textarea,
 .media-toolbar ~ .form-input.content-textarea {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
+}
+
+/* 드래그 앤 드롭 */
+.textarea-wrap {
+  position: relative;
+}
+
+.textarea-wrap.drag-active .content-textarea {
+  border-color: var(--primary);
+  border-style: dashed;
+  opacity: 0.6;
+}
+
+.drag-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
+  border: 2px dashed var(--primary);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  color: var(--primary);
+  font-size: 15px;
+  font-weight: 600;
+  pointer-events: none;
 }
 
 .write-actions {

@@ -52,3 +52,21 @@
   height: 100%;
   border: none;
 }
+
+/* ── 이모티콘 ─────────────────────────────────────────────────────────────── */
+.content-emoticon-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.content-emoticon {
+  display: inline-block;
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  vertical-align: middle;
+  border-radius: 4px;
+}

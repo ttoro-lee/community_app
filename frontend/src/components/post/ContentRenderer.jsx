@@ -58,6 +58,40 @@ export default function ContentRenderer({ content }) {
   const rendered = lines.map((line, i) => {
     const trimmed = line.trim()
 
+    // ── 이모티콘 마커 ────────────────────────────────────────────────────────
+    // 한 줄에 이모티콘이 하나 이상 포함될 수 있으므로 인라인 파싱
+    if (trimmed.includes('[emoticon:')) {
+      const parts = []
+      let remaining = line
+      let partIdx = 0
+      const emoticonRegex = /\[emoticon:([^\]]+)\]/g
+      let match
+      let lastIndex = 0
+      emoticonRegex.lastIndex = 0
+      while ((match = emoticonRegex.exec(remaining)) !== null) {
+        if (match.index > lastIndex) {
+          parts.push(
+            <span key={`t-${partIdx++}`}>{remaining.slice(lastIndex, match.index)}</span>
+          )
+        }
+        parts.push(
+          <img
+            key={`em-${partIdx++}`}
+            src={match[1]}
+            alt="이모티콘"
+            className="content-emoticon"
+            loading="lazy"
+            onError={(e) => { e.currentTarget.style.display = 'none' }}
+          />
+        )
+        lastIndex = match.index + match[0].length
+      }
+      if (lastIndex < remaining.length) {
+        parts.push(<span key={`t-${partIdx++}`}>{remaining.slice(lastIndex)}</span>)
+      }
+      return <p key={i} className="content-emoticon-line">{parts}</p>
+    }
+
     // ── 이미지 마커 ─────────────────────────────────────────────────────────
     if (trimmed.startsWith('[image:') && trimmed.endsWith(']')) {
       const url = trimmed.slice(7, -1)

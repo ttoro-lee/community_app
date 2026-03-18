@@ -48,3 +48,17 @@ export const updateBestPostThreshold = (minLikes) =>
   client
     .patch('/admin/settings/best-post-threshold', { best_post_min_likes: minLikes })
     .then((r) => r.data)
+
+// ─── 게시판 카테고리 관리 ─────────────────────────────────────────────────────
+
+export const getAdminCategories = () =>
+  client.get('/admin/categories').then((r) => r.data)
+
+export const createAdminCategory = (data) =>
+  client.post('/admin/categories', data).then((r) => r.data)
+
+export const updateAdminCategory = (catId, data) =>
+  client.patch(`/admin/categories/${catId}`, data).then((r) => r.data)
+
+export const deleteAdminCategory = (catId) =>
+  client.delete(`/admin/categories/${catId}`)
