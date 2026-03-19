@@ -5,3 +5,4 @@ from app.models.comment import Comment
 from app.models.like import Like
 from app.models.settings import SiteSettings
 from app.models.emoticon import Emoticon
+from app.models.notification import Notification

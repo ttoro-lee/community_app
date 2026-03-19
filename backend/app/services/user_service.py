@@ -5,6 +5,8 @@ from sqlalchemy import func
 from fastapi import HTTPException, status
 from app.models.user import User
 from app.models.post import Post
+from app.models.comment import Comment
+from app.models.like import Like
 from app.schemas.user import UserCreate, UserUpdate
 from app.core.security import get_password_hash, verify_password, create_access_token
 from app.core.config import settings
@@ -132,6 +134,41 @@ def get_my_posts(db: Session, user_id: int, page: int = 1, size: int = 20) -> di
     )
     total = query.count()
     items = query.offset((page - 1) * size).limit(size).all()
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "size": size,
+        "pages": (total + size - 1) // size if total > 0 else 1,
+    }
+
+
+def get_my_comments(db: Session, user_id: int, page: int = 1, size: int = 20) -> dict:
+    query = (
+        db.query(Comment)
+        .filter(Comment.user_id == user_id, Comment.is_deleted == False)
+        .order_by(Comment.created_at.desc())
+    )
+    total = query.count()
+    comments = query.offset((page - 1) * size).limit(size).all()
+
+    items = []
+    for c in comments:
+        like_count = (
+            db.query(func.count(Like.id)).filter(Like.comment_id == c.id).scalar()
+        )
+        post = c.post
+        items.append({
+            "id": c.id,
+            "content": c.content,
+            "post_id": c.post_id,
+            "post_title": (post.title if post and not post.is_deleted else "(삭제된 게시글)"),
+            "parent_id": c.parent_id,
+            "is_deleted": c.is_deleted,
+            "created_at": c.created_at,
+            "like_count": like_count,
+        })
+
     return {
         "items": items,
         "total": total,

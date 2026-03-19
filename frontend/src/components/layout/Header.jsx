@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { Users, LogIn, LogOut, PenSquare, Shield } from 'lucide-react'
+import NotificationBell from './NotificationBell'
 import './Header.css'
 
 export default function Header() {
@@ -31,6 +32,7 @@ export default function Header() {
                 <PenSquare size={14} />
                 글쓰기
               </button>
+              <NotificationBell />
               <Link to="/profile" className="header-avatar" title={user.nickname}>
                 <div className="avatar">
                   {user.avatar_url ? (

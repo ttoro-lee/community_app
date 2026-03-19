@@ -36,3 +36,26 @@ class CommentResponse(BaseModel):
 
 
 CommentResponse.model_rebuild()
+
+
+class MyCommentItem(BaseModel):
+    """내 댓글 목록 조회용 경량 스키마"""
+    id: int
+    content: str
+    post_id: int
+    post_title: Optional[str]
+    parent_id: Optional[int]   # None이면 댓글, 값이 있으면 대댓글
+    is_deleted: bool
+    created_at: datetime
+    like_count: int = 0
+
+    class Config:
+        from_attributes = True
+
+
+class PaginatedMyComments(BaseModel):
+    items: List[MyCommentItem]
+    total: int
+    page: int
+    size: int
+    pages: int
