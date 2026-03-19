@@ -3,6 +3,7 @@ from sqlalchemy import func
 from fastapi import HTTPException
 from app.models.comment import Comment
 from app.models.like import Like
+from app.models.post import Post
 from app.schemas.comment import CommentCreate, CommentUpdate
 from typing import Optional, List
 
@@ -55,6 +56,7 @@ def get_comments_by_post(
 
 
 def create_comment(db: Session, comment_data: CommentCreate, user_id: int) -> Comment:
+    parent = None
     if comment_data.parent_id:
         parent = db.query(Comment).filter(Comment.id == comment_data.parent_id).first()
         if not parent:
@@ -70,7 +72,32 @@ def create_comment(db: Session, comment_data: CommentCreate, user_id: int) -> Co
     db.add(comment)
     db.commit()
     db.refresh(comment)
+
+    # ── 알림 생성 ──────────────────────────────────────────────────────────────
+    _create_comment_notifications(db, comment, parent, user_id)
+
     return comment
+
+
+def _create_comment_notifications(
+    db: Session, comment: Comment, parent: Optional[Comment], actor_id: int
+) -> None:
+    """댓글/대댓글 작성 시 관련 유저에게 알림을 생성한다."""
+    from app.services.notification_service import create_notification
+
+    notified: set = set()
+    post_id = comment.post_id
+
+    # 대댓글인 경우 — 부모 댓글 작성자에게 알림
+    if parent is not None and parent.user_id != actor_id:
+        create_notification(db, parent.user_id, actor_id, "reply_on_comment", post_id, comment.id)
+        notified.add(parent.user_id)
+
+    # 게시글 작성자에게 알림 (이미 위에서 알림 받은 경우 제외)
+    post = db.query(Post).filter(Post.id == post_id).first()
+    if post and post.user_id != actor_id and post.user_id not in notified:
+        create_notification(db, post.user_id, actor_id, "comment_on_post", post_id, comment.id)
+        notified.add(post.user_id)
 
 
 def update_comment(db: Session, comment_id: int, comment_data: CommentUpdate, user_id: int) -> Comment:

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { updateMe, changePassword, deleteAccount, getMyPosts } from '../api/auth'
+import { updateMe, changePassword, deleteAccount, getMyPosts, getMyComments } from '../api/auth'
 import {
   User, Save, Lock, Trash2, FileText, ChevronLeft, ChevronRight,
-  MessageSquare, Eye, Heart, Calendar,
+  MessageSquare, Eye, Heart, Calendar, Reply,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
@@ -13,6 +13,7 @@ import './ProfilePage.css'
 
 const TABS = [
   { id: 'posts',    label: '내가 쓴 글',    icon: FileText },
+  { id: 'comments', label: '내가 쓴 댓글',  icon: MessageSquare },
   { id: 'profile',  label: '프로필 수정',   icon: User },
   { id: 'password', label: '비밀번호 변경', icon: Lock },
   { id: 'delete',   label: '계정 탈퇴',     icon: Trash2 },
@@ -70,6 +71,7 @@ export default function ProfilePage() {
       {/* 탭 컨텐츠 */}
       <div className="profile-content-card">
         {activeTab === 'posts'    && <MyPostsTab />}
+        {activeTab === 'comments' && <MyCommentsTab />}
         {activeTab === 'profile'  && <ProfileEditTab user={user} setUser={setUser} />}
         {activeTab === 'password' && <PasswordTab />}
         {activeTab === 'delete'   && <DeleteTab logout={logout} navigate={navigate} />}
@@ -153,6 +155,89 @@ function MyPostsTab() {
             className="btn btn-ghost btn-sm"
             disabled={page >= pages}
             onClick={() => fetchPosts(page + 1)}
+          >
+            <ChevronRight size={14} />
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ── 내가 쓴 댓글 ────────────────────────────────── */
+function MyCommentsTab() {
+  const [comments, setComments] = useState([])
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
+  const [pages, setPages] = useState(1)
+  const [loading, setLoading] = useState(true)
+
+  const fetchComments = async (p = 1) => {
+    setLoading(true)
+    try {
+      const res = await getMyComments({ page: p, size: 15 })
+      setComments(res.data.items)
+      setTotal(res.data.total)
+      setPages(res.data.pages)
+      setPage(res.data.page)
+    } catch {
+      toast.error('댓글을 불러오지 못했습니다.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { fetchComments(1) }, [])
+
+  if (loading) return <div className="tab-loading">불러오는 중...</div>
+
+  return (
+    <div className="my-posts-tab">
+      <div className="tab-title-row">
+        <h2 className="tab-title"><MessageSquare size={17} /> 내가 쓴 댓글</h2>
+        <span className="tab-count">총 {total}개</span>
+      </div>
+
+      {comments.length === 0 ? (
+        <div className="tab-empty">작성한 댓글이 없습니다.</div>
+      ) : (
+        <ul className="my-post-list">
+          {comments.map((comment) => (
+            <li key={comment.id} className="my-post-item">
+              <Link to={`/posts/${comment.post_id}`} className="my-post-title">
+                {comment.parent_id != null && (
+                  <span className="my-post-badge reply">
+                    <Reply size={10} /> 대댓글
+                  </span>
+                )}
+                {comment.content}
+              </Link>
+              <div className="my-post-meta">
+                <span className="my-post-category">{comment.post_title}</span>
+                <span className="my-post-stat"><Heart size={12} /> {comment.like_count}</span>
+                <span className="my-post-date">
+                  {format(new Date(comment.created_at), 'yyyy.MM.dd', { locale: ko })}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {pages > 1 && (
+        <div className="tab-pagination">
+          <button
+            className="btn btn-ghost btn-sm"
+            disabled={page <= 1}
+            onClick={() => fetchComments(page - 1)}
+          >
+            <ChevronLeft size={14} />
+          </button>
+          <span className="page-info">{page} / {pages}</span>
+          <button
+            className="btn btn-ghost btn-sm"
+            disabled={page >= pages}
+            onClick={() => fetchComments(page + 1)}
           >
             <ChevronRight size={14} />
           </button>

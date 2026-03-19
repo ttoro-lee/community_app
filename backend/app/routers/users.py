@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.schemas.user import UserCreate, UserResponse, UserUpdate, Token, LoginRequest, PasswordChange, DeleteAccount
 from app.schemas.post import PaginatedPosts
+from app.schemas.comment import PaginatedMyComments
 from app.services import user_service
 from app.dependencies import get_current_user
 from app.models.user import User
@@ -73,6 +74,17 @@ def get_my_posts(
     from app.services.post_service import build_post_list_item
     result["items"] = [build_post_list_item(p, db, current_user) for p in result["items"]]
     return result
+
+
+@router.get("/me/comments", response_model=PaginatedMyComments)
+def get_my_comments(
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """내가 작성한 댓글 목록"""
+    return user_service.get_my_comments(db, current_user.id, page, size)
 
 
 @router.get("/{user_id}", response_model=UserResponse)

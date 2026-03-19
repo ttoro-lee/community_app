@@ -1,0 +1,192 @@
+/* ── 래퍼 ─────────────────────────────────────── */
+.notif-wrap {
+  position: relative;
+}
+
+/* ── 벨 버튼 ──────────────────────────────────── */
+.notif-bell-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.notif-bell-btn:hover {
+  background: var(--secondary);
+  color: var(--text-primary);
+}
+
+/* ── 빨간 뱃지 ────────────────────────────────── */
+.notif-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--danger, #ef4444);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* ── 드롭다운 ─────────────────────────────────── */
+.notif-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 340px;
+  max-height: 480px;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg, 0 8px 24px rgba(0,0,0,0.12));
+  overflow: hidden;
+  z-index: 200;
+}
+
+/* ── 드롭다운 헤더 ────────────────────────────── */
+.notif-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.notif-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.notif-read-all-btn {
+  font-size: 12px;
+  color: var(--primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s;
+}
+.notif-read-all-btn:hover {
+  background: var(--primary-light, #e0e7ff);
+}
+
+/* ── 목록 ─────────────────────────────────────── */
+.notif-list {
+  overflow-y: auto;
+  flex: 1;
+}
+.notif-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* ── 알림 아이템 ──────────────────────────────── */
+.notif-item {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border: none;
+  background: var(--bg-hover, #f8fafc);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.notif-item:last-child {
+  border-bottom: none;
+}
+.notif-item:hover {
+  background: var(--secondary, #f1f5f9);
+}
+.notif-item.read {
+  background: var(--bg-card);
+}
+.notif-item.read:hover {
+  background: var(--secondary, #f1f5f9);
+}
+
+/* ── 아바타 ───────────────────────────────────── */
+.notif-item-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), #818cf8);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.notif-item-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── 본문 ─────────────────────────────────────── */
+.notif-item-body {
+  flex: 1;
+  min-width: 0;
+}
+.notif-item-text {
+  font-size: 13px;
+  color: var(--text-primary);
+  line-height: 1.4;
+  margin: 0 0 2px;
+}
+.notif-item-post {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 0 3px;
+}
+.notif-item-time {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ── 미읽음 파란 점 ───────────────────────────── */
+.notif-dot {
+  position: absolute;
+  top: 14px;
+  right: 12px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary);
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .notif-dropdown {
+    width: calc(100vw - 24px);
+    right: -8px;
+  }
+}

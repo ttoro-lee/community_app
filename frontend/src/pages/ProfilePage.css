@@ -168,6 +168,13 @@
 }
 .my-post-badge.notice  { background: rgba(239,68,68,0.12); color: #ef4444; }
 .my-post-badge.pinned  { background: rgba(99,102,241,0.12); color: var(--primary); }
+.my-post-badge.reply   {
+  background: rgba(16,185,129,0.12);
+  color: #10b981;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
 
 .my-post-meta {
   display: flex;
