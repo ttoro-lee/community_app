@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -16,6 +16,19 @@ import {
   BarChart2,
   Trophy,
   Save,
+  Smile,
+  Trash2,
+  EyeOff,
+  Eye,
+  Upload,
+  CropIcon,
+  LayoutList,
+  Plus,
+  Pencil,
+  X,
+  Check,
+  Lock,
+  Unlock,
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import {
@@ -25,7 +38,18 @@ import {
   suspendUser,
   getBestPostThreshold,
   updateBestPostThreshold,
+  getAdminCategories,
+  createAdminCategory,
+  updateAdminCategory,
+  deleteAdminCategory,
 } from '../api/admin'
+import {
+  getAllEmoticons,
+  uploadEmoticon,
+  deleteEmoticon,
+  toggleEmoticon,
+} from '../api/emoticons'
+import toast from 'react-hot-toast'
 import './AdminPage.css'
 
 // ─── 정지 모달 ────────────────────────────────────────────────────────────────
@@ -112,6 +136,724 @@ function SuspendModal({ user, initialDays = 3, onClose, onConfirm }) {
           </div>
         </form>
       </div>
+    </div>
+  )
+}
+
+// ─── 이미지 크롭 모달 ─────────────────────────────────────────────────────────
+
+const CROP_SIZE = 200
+
+function ImageCropModal({ file, onConfirm, onCancel }) {
+  const containerRef = useRef(null)
+  const [imgEl, setImgEl] = useState(null)
+  const [scale, setScale] = useState(1)
+  const [displayW, setDisplayW] = useState(0)
+  const [displayH, setDisplayH] = useState(0)
+  const [cropX, setCropX] = useState(0)
+  const [cropY, setCropY] = useState(0)
+  const [dragging, setDragging] = useState(false)
+  const dragStart = useRef({ mx: 0, my: 0, ox: 0, oy: 0 })
+
+  useEffect(() => {
+    const img = new Image()
+    img.onload = () => {
+      const MAX = 480
+      const s = Math.min(1, MAX / Math.max(img.naturalWidth, img.naturalHeight))
+      setScale(s)
+      setDisplayW(img.naturalWidth * s)
+      setDisplayH(img.naturalHeight * s)
+      // 이미지 중앙에 크롭 박스 초기 위치
+      setCropX(Math.max(0, Math.floor((img.naturalWidth - CROP_SIZE) / 2)))
+      setCropY(Math.max(0, Math.floor((img.naturalHeight - CROP_SIZE) / 2)))
+      setImgEl(img)
+    }
+    img.src = URL.createObjectURL(file)
+    return () => URL.revokeObjectURL(img.src)
+  }, [file])
+
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
+
+  const onMouseDown = useCallback(
+    (e) => {
+      e.preventDefault()
+      setDragging(true)
+      dragStart.current = { mx: e.clientX, my: e.clientY, ox: cropX, oy: cropY }
+    },
+    [cropX, cropY]
+  )
+
+  const onMouseMove = useCallback(
+    (e) => {
+      if (!dragging || !imgEl) return
+      const dx = (e.clientX - dragStart.current.mx) / scale
+      const dy = (e.clientY - dragStart.current.my) / scale
+      setCropX(clamp(dragStart.current.ox + dx, 0, imgEl.naturalWidth - CROP_SIZE))
+      setCropY(clamp(dragStart.current.oy + dy, 0, imgEl.naturalHeight - CROP_SIZE))
+    },
+    [dragging, imgEl, scale]
+  )
+
+  const onMouseUp = useCallback(() => setDragging(false), [])
+
+  // 터치 이벤트
+  const onTouchStart = useCallback(
+    (e) => {
+      e.preventDefault()
+      const t = e.touches[0]
+      setDragging(true)
+      dragStart.current = { mx: t.clientX, my: t.clientY, ox: cropX, oy: cropY }
+    },
+    [cropX, cropY]
+  )
+
+  const onTouchMove = useCallback(
+    (e) => {
+      if (!dragging || !imgEl) return
+      const t = e.touches[0]
+      const dx = (t.clientX - dragStart.current.mx) / scale
+      const dy = (t.clientY - dragStart.current.my) / scale
+      setCropX(clamp(dragStart.current.ox + dx, 0, imgEl.naturalWidth - CROP_SIZE))
+      setCropY(clamp(dragStart.current.oy + dy, 0, imgEl.naturalHeight - CROP_SIZE))
+    },
+    [dragging, imgEl, scale]
+  )
+
+  const handleCrop = () => {
+    if (!imgEl) return
+    const canvas = document.createElement('canvas')
+    canvas.width = CROP_SIZE
+    canvas.height = CROP_SIZE
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(
+      imgEl,
+      Math.round(cropX), Math.round(cropY), CROP_SIZE, CROP_SIZE,
+      0, 0, CROP_SIZE, CROP_SIZE
+    )
+    canvas.toBlob((blob) => onConfirm(blob), 'image/png')
+  }
+
+  const cropDisplaySize = CROP_SIZE * scale
+
+  return (
+    <div className="modal-overlay" onClick={onCancel}>
+      <div
+        className="modal-box crop-modal-box"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="modal-title">이미지 크롭 (200×200)</h3>
+        <p className="modal-subtitle">
+          흰색 박스를 드래그해서 원하는 영역을 선택하세요.
+        </p>
+
+        {imgEl ? (
+          <div
+            ref={containerRef}
+            className="crop-container"
+            style={{ width: displayW, height: displayH }}
+            onMouseMove={onMouseMove}
+            onMouseUp={onMouseUp}
+            onMouseLeave={onMouseUp}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onMouseUp}
+          >
+            <img
+              src={imgEl.src}
+              alt="원본"
+              style={{ width: displayW, height: displayH, display: 'block' }}
+              draggable={false}
+            />
+            {/* 어두운 오버레이 */}
+            <div
+              className="crop-overlay"
+              style={{ width: displayW, height: displayH }}
+            />
+            {/* 크롭 선택 박스 */}
+            <div
+              className="crop-box"
+              style={{
+                left: cropX * scale,
+                top: cropY * scale,
+                width: cropDisplaySize,
+                height: cropDisplaySize,
+                cursor: dragging ? 'grabbing' : 'grab',
+              }}
+              onMouseDown={onMouseDown}
+              onTouchStart={onTouchStart}
+            >
+              {/* 코너 핸들 */}
+              <span className="crop-corner tl" />
+              <span className="crop-corner tr" />
+              <span className="crop-corner bl" />
+              <span className="crop-corner br" />
+            </div>
+          </div>
+        ) : (
+          <div className="crop-loading">이미지 로딩 중...</div>
+        )}
+
+        <div className="modal-actions" style={{ marginTop: 20 }}>
+          <button className="btn-ghost" onClick={onCancel}>취소</button>
+          <button className="btn-success" onClick={handleCrop} disabled={!imgEl}>
+            크롭 완료
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── 게시판 카테고리 관리 섹션 ────────────────────────────────────────────────
+
+const EMPTY_FORM = { name: '', slug: '', description: '', icon: '📋', order: 0, admin_only: false }
+
+function CategorySection() {
+  const queryClient = useQueryClient()
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [form, setForm] = useState(EMPTY_FORM)
+  const [editId, setEditId] = useState(null)
+  const [editForm, setEditForm] = useState({})
+
+  const { data: categories = [], isLoading } = useQuery('adminCategories', getAdminCategories, {
+    staleTime: 30_000,
+  })
+
+  const createMutation = useMutation((data) => createAdminCategory(data), {
+    onSuccess: () => {
+      queryClient.invalidateQueries('adminCategories')
+      queryClient.invalidateQueries('categories')
+      setForm(EMPTY_FORM)
+      setShowAddForm(false)
+      toast.success('카테고리가 추가되었습니다.')
+    },
+    onError: (err) => toast.error(err.response?.data?.detail || '추가 실패'),
+  })
+
+  const updateMutation = useMutation(({ id, data }) => updateAdminCategory(id, data), {
+    onSuccess: () => {
+      queryClient.invalidateQueries('adminCategories')
+      queryClient.invalidateQueries('categories')
+      setEditId(null)
+      toast.success('수정되었습니다.')
+    },
+    onError: (err) => toast.error(err.response?.data?.detail || '수정 실패'),
+  })
+
+  const deleteMutation = useMutation((id) => deleteAdminCategory(id), {
+    onSuccess: () => {
+      queryClient.invalidateQueries('adminCategories')
+      queryClient.invalidateQueries('categories')
+      toast.success('삭제되었습니다.')
+    },
+    onError: (err) => toast.error(err.response?.data?.detail || '삭제 실패'),
+  })
+
+  const toggleActiveMutation = useMutation(
+    ({ id, is_active }) => updateAdminCategory(id, { is_active }),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('adminCategories')
+        queryClient.invalidateQueries('categories')
+      },
+      onError: (err) => toast.error(err.response?.data?.detail || '변경 실패'),
+    }
+  )
+
+  const handleAddSubmit = (e) => {
+    e.preventDefault()
+    if (!form.name.trim()) { toast.error('카테고리 이름을 입력해주세요.'); return }
+    if (!form.slug.trim()) { toast.error('슬러그를 입력해주세요.'); return }
+    createMutation.mutate(form)
+  }
+
+  const startEdit = (cat) => {
+    setEditId(cat.id)
+    setEditForm({
+      name: cat.name,
+      slug: cat.slug,
+      description: cat.description || '',
+      icon: cat.icon || '📋',
+      order: cat.order,
+      admin_only: cat.admin_only,
+    })
+  }
+
+  const handleEditSubmit = (id) => {
+    if (!editForm.name?.trim()) { toast.error('이름을 입력해주세요.'); return }
+    updateMutation.mutate({ id, data: editForm })
+  }
+
+  const slugify = (name) =>
+    name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+
+  return (
+    <div className="admin-section">
+      <div className="admin-section-header">
+        <h2 className="admin-section-title">
+          <LayoutList size={16} />
+          게시판 카테고리 관리
+        </h2>
+        <button
+          className="best-setting-btn"
+          onClick={() => { setShowAddForm((v) => !v); setForm(EMPTY_FORM) }}
+        >
+          <Plus size={14} />
+          카테고리 추가
+        </button>
+      </div>
+
+      {/* 추가 폼 */}
+      {showAddForm && (
+        <form className="category-add-form" onSubmit={handleAddSubmit}>
+          <div className="category-form-row">
+            <input
+              className="form-input cat-icon-input"
+              type="text"
+              placeholder="아이콘"
+              value={form.icon}
+              onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))}
+              maxLength={4}
+            />
+            <input
+              className="form-input cat-name-input"
+              type="text"
+              placeholder="카테고리 이름 *"
+              value={form.name}
+              onChange={(e) => {
+                const name = e.target.value
+                setForm((f) => ({ ...f, name, slug: slugify(name) }))
+              }}
+              maxLength={100}
+              required
+            />
+            <input
+              className="form-input cat-slug-input"
+              type="text"
+              placeholder="슬러그 (영문) *"
+              value={form.slug}
+              onChange={(e) => setForm((f) => ({ ...f, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') }))}
+              maxLength={100}
+              required
+            />
+            <input
+              className="form-input cat-order-input"
+              type="number"
+              placeholder="순서"
+              value={form.order}
+              onChange={(e) => setForm((f) => ({ ...f, order: Number(e.target.value) }))}
+              min={0}
+            />
+            <label className="cat-admin-only-label">
+              <input
+                type="checkbox"
+                checked={form.admin_only}
+                onChange={(e) => setForm((f) => ({ ...f, admin_only: e.target.checked }))}
+              />
+              관리자 전용
+            </label>
+          </div>
+          <div className="category-form-row">
+            <input
+              className="form-input cat-desc-input"
+              type="text"
+              placeholder="설명 (선택)"
+              value={form.description}
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              maxLength={200}
+            />
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button type="submit" className="best-setting-btn" disabled={createMutation.isLoading}>
+                <Check size={14} />
+                {createMutation.isLoading ? '추가 중...' : '추가'}
+              </button>
+              <button
+                type="button"
+                className="btn-ghost"
+                style={{ padding: '7px 12px', fontSize: 13 }}
+                onClick={() => setShowAddForm(false)}
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        </form>
+      )}
+
+      {/* 카테고리 목록 */}
+      {isLoading ? (
+        <p className="emoticon-loading">불러오는 중...</p>
+      ) : categories.length === 0 ? (
+        <p className="emoticon-empty">등록된 카테고리가 없습니다.</p>
+      ) : (
+        <div className="category-table-wrap">
+          <table className="user-table category-table">
+            <thead>
+              <tr>
+                <th>아이콘</th>
+                <th>이름</th>
+                <th>슬러그</th>
+                <th>설명</th>
+                <th style={{ textAlign: 'center' }}>순서</th>
+                <th style={{ textAlign: 'center' }}>게시글</th>
+                <th style={{ textAlign: 'center' }}>전용</th>
+                <th style={{ textAlign: 'center' }}>상태</th>
+                <th style={{ textAlign: 'center' }}>액션</th>
+              </tr>
+            </thead>
+            <tbody>
+              {categories.map((cat) =>
+                editId === cat.id ? (
+                  /* 인라인 편집 행 */
+                  <tr key={cat.id} className="category-edit-row">
+                    <td>
+                      <input
+                        className="form-input cat-icon-input-sm"
+                        value={editForm.icon}
+                        onChange={(e) => setEditForm((f) => ({ ...f, icon: e.target.value }))}
+                        maxLength={4}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="form-input"
+                        style={{ width: '100%', minWidth: 100 }}
+                        value={editForm.name}
+                        onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))}
+                        maxLength={100}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="form-input"
+                        style={{ width: '100%', minWidth: 80 }}
+                        value={editForm.slug}
+                        onChange={(e) => setEditForm((f) => ({ ...f, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') }))}
+                        maxLength={100}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="form-input"
+                        style={{ width: '100%', minWidth: 120 }}
+                        value={editForm.description}
+                        onChange={(e) => setEditForm((f) => ({ ...f, description: e.target.value }))}
+                        maxLength={200}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        className="form-input"
+                        type="number"
+                        style={{ width: 60, textAlign: 'center' }}
+                        value={editForm.order}
+                        onChange={(e) => setEditForm((f) => ({ ...f, order: Number(e.target.value) }))}
+                        min={0}
+                      />
+                    </td>
+                    <td className="td-num">{cat.post_count}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      <input
+                        type="checkbox"
+                        checked={editForm.admin_only}
+                        onChange={(e) => setEditForm((f) => ({ ...f, admin_only: e.target.checked }))}
+                      />
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      {cat.is_active ? (
+                        <span className="badge-active">활성</span>
+                      ) : (
+                        <span className="badge-suspended">비활성</span>
+                      )}
+                    </td>
+                    <td className="td-actions" style={{ justifyContent: 'center' }}>
+                      <button
+                        className="action-btn action-unsuspend"
+                        title="저장"
+                        onClick={() => handleEditSubmit(cat.id)}
+                        disabled={updateMutation.isLoading}
+                      >
+                        <Check size={13} />
+                      </button>
+                      <button
+                        className="action-btn"
+                        title="취소"
+                        onClick={() => setEditId(null)}
+                      >
+                        <X size={13} />
+                      </button>
+                    </td>
+                  </tr>
+                ) : (
+                  /* 일반 행 */
+                  <tr key={cat.id} className={cat.is_active ? '' : 'category-inactive-row'}>
+                    <td style={{ fontSize: 20, textAlign: 'center' }}>{cat.icon}</td>
+                    <td className="td-nickname">{cat.name}</td>
+                    <td style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--text-muted)' }}>{cat.slug}</td>
+                    <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>{cat.description || '-'}</td>
+                    <td className="td-num">{cat.order}</td>
+                    <td className="td-num">{cat.post_count}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      {cat.admin_only ? (
+                        <Lock size={13} style={{ color: '#f97316', margin: 'auto' }} />
+                      ) : (
+                        <Unlock size={13} style={{ color: 'var(--text-muted)', margin: 'auto' }} />
+                      )}
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      {cat.is_active ? (
+                        <span className="badge-active">활성</span>
+                      ) : (
+                        <span className="badge-suspended">비활성</span>
+                      )}
+                    </td>
+                    <td className="td-actions" style={{ justifyContent: 'center' }}>
+                      <button
+                        className="action-btn action-promote"
+                        title="수정"
+                        onClick={() => startEdit(cat)}
+                      >
+                        <Pencil size={13} />
+                      </button>
+                      <button
+                        className={`action-btn ${cat.is_active ? '' : 'action-unsuspend'}`}
+                        title={cat.is_active ? '비활성화' : '활성화'}
+                        onClick={() => toggleActiveMutation.mutate({ id: cat.id, is_active: !cat.is_active })}
+                      >
+                        {cat.is_active ? <EyeOff size={13} /> : <Eye size={13} />}
+                      </button>
+                      <button
+                        className="action-btn action-suspend"
+                        title="삭제"
+                        onClick={() => {
+                          if (cat.post_count > 0) {
+                            toast.error(`게시글이 ${cat.post_count}개 있어 삭제할 수 없습니다.`)
+                            return
+                          }
+                          if (confirm(`"${cat.name}" 카테고리를 삭제할까요?`)) {
+                            deleteMutation.mutate(cat.id)
+                          }
+                        }}
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </td>
+                  </tr>
+                )
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── 이모티콘 관리 섹션 ────────────────────────────────────────────────────────
+
+function EmoticonSection() {
+  const queryClient = useQueryClient()
+  const [emName, setEmName] = useState('')
+  const [selectedFile, setSelectedFile] = useState(null)
+  const [previewUrl, setPreviewUrl] = useState(null)
+  const [needsCrop, setNeedsCrop] = useState(false)
+  const [showCropModal, setShowCropModal] = useState(false)
+  const [croppedBlob, setCroppedBlob] = useState(null)
+  const fileInputRef = useRef(null)
+
+  const { data: emoticons = [], isLoading } = useQuery('allEmoticons', getAllEmoticons, {
+    staleTime: 30_000,
+  })
+
+  const uploadMutation = useMutation(
+    (formData) => uploadEmoticon(formData),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('allEmoticons')
+        queryClient.invalidateQueries('emoticons')
+        setEmName('')
+        setSelectedFile(null)
+        setPreviewUrl(null)
+        setCroppedBlob(null)
+        setNeedsCrop(false)
+        if (fileInputRef.current) fileInputRef.current.value = ''
+        toast.success('이모티콘이 등록되었습니다.')
+      },
+      onError: (err) => toast.error(err.response?.data?.detail || '등록 실패'),
+    }
+  )
+
+  const deleteMutation = useMutation(
+    (id) => deleteEmoticon(id),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('allEmoticons')
+        queryClient.invalidateQueries('emoticons')
+        toast.success('삭제되었습니다.')
+      },
+    }
+  )
+
+  const toggleMutation = useMutation(
+    (id) => toggleEmoticon(id),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('allEmoticons')
+        queryClient.invalidateQueries('emoticons')
+      },
+    }
+  )
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setSelectedFile(file)
+    setCroppedBlob(null)
+
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      const tooLarge = img.naturalWidth > CROP_SIZE || img.naturalHeight > CROP_SIZE
+      setNeedsCrop(tooLarge)
+      setPreviewUrl(url)
+      if (tooLarge) setShowCropModal(true)
+    }
+    img.src = url
+  }
+
+  const handleCropConfirm = (blob) => {
+    setCroppedBlob(blob)
+    setShowCropModal(false)
+    const url = URL.createObjectURL(blob)
+    setPreviewUrl(url)
+    toast.success('크롭 완료! 이제 등록 버튼을 눌러주세요.')
+  }
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    if (!emName.trim()) { toast.error('이모티콘 이름을 입력해주세요.'); return }
+    if (!selectedFile && !croppedBlob) { toast.error('이미지를 선택해주세요.'); return }
+    if (needsCrop && !croppedBlob) { toast.error('이미지 크롭을 완료해주세요.'); return }
+
+    const formData = new FormData()
+    formData.append('name', emName.trim())
+    if (croppedBlob) {
+      formData.append('file', croppedBlob, `${Date.now()}.png`)
+    } else {
+      formData.append('file', selectedFile)
+    }
+    uploadMutation.mutate(formData)
+  }
+
+  return (
+    <div className="admin-section">
+      <div className="admin-section-header">
+        <h2 className="admin-section-title">
+          <Smile size={16} />
+          이모티콘 관리
+        </h2>
+      </div>
+
+      {/* 등록 폼 */}
+      <form className="emoticon-upload-form" onSubmit={handleSubmit}>
+        <div className="emoticon-upload-row">
+          <input
+            className="form-input emoticon-name-input"
+            type="text"
+            placeholder="이모티콘 이름"
+            value={emName}
+            onChange={(e) => setEmName(e.target.value)}
+            maxLength={50}
+          />
+          <button
+            type="button"
+            className="btn-ghost emoticon-file-btn"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Upload size={14} />
+            이미지 선택
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/gif,image/webp"
+            style={{ display: 'none' }}
+            onChange={handleFileChange}
+          />
+          {selectedFile && needsCrop && !croppedBlob && (
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={() => setShowCropModal(true)}
+              style={{ color: '#f97316', borderColor: '#f97316' }}
+            >
+              <CropIcon size={14} />
+              크롭 필요
+            </button>
+          )}
+          {previewUrl && (
+            <div className="emoticon-preview-wrap">
+              <img src={previewUrl} alt="미리보기" className="emoticon-preview-img" />
+              {croppedBlob && <span className="emoticon-cropped-label">✓ 크롭됨</span>}
+            </div>
+          )}
+          <button
+            type="submit"
+            className="best-setting-btn"
+            disabled={uploadMutation.isLoading}
+          >
+            <Save size={14} />
+            {uploadMutation.isLoading ? '등록 중...' : '등록'}
+          </button>
+        </div>
+        <p className="emoticon-upload-hint">
+          이미지는 200×200 px 권장. 큰 이미지는 자동으로 크롭 창이 열립니다.
+        </p>
+      </form>
+
+      {/* 이모티콘 목록 */}
+      {isLoading ? (
+        <p className="emoticon-loading">불러오는 중...</p>
+      ) : emoticons.length === 0 ? (
+        <p className="emoticon-empty">등록된 이모티콘이 없습니다.</p>
+      ) : (
+        <div className="emoticon-admin-grid">
+          {emoticons.map((em) => (
+            <div key={em.id} className={`emoticon-admin-item ${em.is_active ? '' : 'inactive'}`}>
+              <img src={em.image_url} alt={em.name} />
+              <span className="emoticon-admin-name">{em.name}</span>
+              <div className="emoticon-admin-actions">
+                <button
+                  className="action-btn"
+                  title={em.is_active ? '비활성화' : '활성화'}
+                  onClick={() => toggleMutation.mutate(em.id)}
+                >
+                  {em.is_active ? <EyeOff size={13} /> : <Eye size={13} />}
+                </button>
+                <button
+                  className="action-btn action-suspend"
+                  title="삭제"
+                  onClick={() => {
+                    if (confirm(`"${em.name}" 이모티콘을 삭제할까요?`)) {
+                      deleteMutation.mutate(em.id)
+                    }
+                  }}
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 크롭 모달 */}
+      {showCropModal && selectedFile && (
+        <ImageCropModal
+          file={selectedFile}
+          onConfirm={handleCropConfirm}
+          onCancel={() => setShowCropModal(false)}
+        />
+      )}
     </div>
   )
 }
@@ -456,6 +1198,12 @@ export default function AdminPage() {
           )}
         </div>
       </div>
+
+      {/* 게시판 카테고리 관리 */}
+      <CategorySection />
+
+      {/* 이모티콘 관리 */}
+      <EmoticonSection />
 
       {/* 정지 모달 */}
       {suspendTarget && (

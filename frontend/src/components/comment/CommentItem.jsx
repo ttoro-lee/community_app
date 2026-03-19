@@ -1,10 +1,11 @@
-import { useState } from 'react'
-import { Heart, Reply, Pencil, Trash2, ChevronDown, ChevronUp, ShieldAlert } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { Heart, Reply, Pencil, Trash2, ChevronDown, ChevronUp, ShieldAlert, Smile } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { useAuth } from '../../contexts/AuthContext'
 import { toggleCommentLike, createComment, updateComment, deleteComment } from '../../api/posts'
 import { adminDeleteComment } from '../../api/admin'
+import EmoticonPicker from '../emoticon/EmoticonPicker'
 import toast from 'react-hot-toast'
 import './CommentItem.css'
 
@@ -14,6 +15,35 @@ import './CommentItem.css'
  * @param {number}  depth           - 현재 댓글의 깊이 (0 = 최상위)
  * @param {string}  parentNickname  - 부모 댓글 작성자 닉네임 (대댓글일 때 @멘션용)
  */
+/** 댓글 텍스트에서 [emoticon:URL] 마커를 파싱해 img 태그로 변환 */
+function renderCommentContent(content) {
+  if (!content) return null
+  const parts = []
+  const regex = /\[emoticon:([^\]]+)\]/g
+  let last = 0
+  let idx = 0
+  let match
+  while ((match = regex.exec(content)) !== null) {
+    if (match.index > last) {
+      parts.push(<span key={idx++}>{content.slice(last, match.index)}</span>)
+    }
+    parts.push(
+      <img
+        key={idx++}
+        src={match[1]}
+        alt="이모티콘"
+        style={{ width: 100, height: 100, objectFit: 'contain', verticalAlign: 'middle', borderRadius: 4, display: 'block', margin: '4px 0' }}
+        onError={(e) => { e.currentTarget.style.display = 'none' }}
+      />
+    )
+    last = match.index + match[0].length
+  }
+  if (last < content.length) {
+    parts.push(<span key={idx++}>{content.slice(last)}</span>)
+  }
+  return parts
+}
+
 export default function CommentItem({ comment, onRefresh, depth = 0, parentNickname = null }) {
   const { user } = useAuth()
   const [liked, setLiked] = useState(comment.is_liked)
@@ -24,6 +54,8 @@ export default function CommentItem({ comment, onRefresh, depth = 0, parentNickn
   const [editText, setEditText] = useState(comment.content)
   // 최상위 댓글만 접기/펼치기 가능
   const [showReplies, setShowReplies] = useState(true)
+  const [showEmoticonPicker, setShowEmoticonPicker] = useState(false)   // 답글 이모티콘
+  const [showEditEmoticonPicker, setShowEditEmoticonPicker] = useState(false) // 수정 이모티콘
 
   const timeAgo = formatDistanceToNow(new Date(comment.created_at), {
     addSuffix: true, locale: ko,
@@ -130,9 +162,26 @@ export default function CommentItem({ comment, onRefresh, depth = 0, parentNickn
               onChange={(e) => setEditText(e.target.value)}
               rows={3}
             />
-            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <div style={{ display: 'flex', gap: 8, marginTop: 8, alignItems: 'center', position: 'relative' }}>
               <button className="btn btn-primary btn-sm" onClick={handleEdit}>저장</button>
               <button className="btn btn-secondary btn-sm" onClick={() => setEditing(false)}>취소</button>
+              <button
+                className="btn btn-secondary btn-sm"
+                style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                onClick={() => setShowEditEmoticonPicker((v) => !v)}
+                title="이모티콘"
+              >
+                <Smile size={13} />
+              </button>
+              {showEditEmoticonPicker && (
+                <EmoticonPicker
+                  onSelect={(marker) => {
+                    setEditText((prev) => prev + marker)
+                    setShowEditEmoticonPicker(false)
+                  }}
+                  onClose={() => setShowEditEmoticonPicker(false)}
+                />
+              )}
             </div>
           </div>
         ) : (
@@ -141,7 +190,7 @@ export default function CommentItem({ comment, onRefresh, depth = 0, parentNickn
             {!comment.is_deleted && parentNickname && (
               <span className="comment-mention">@{parentNickname}&nbsp;</span>
             )}
-            {comment.is_deleted ? '삭제된 댓글입니다.' : comment.content}
+            {comment.is_deleted ? '삭제된 댓글입니다.' : renderCommentContent(comment.content)}
           </p>
         )}
 
@@ -193,9 +242,26 @@ export default function CommentItem({ comment, onRefresh, depth = 0, parentNickn
               onChange={(e) => setReplyText(e.target.value)}
               rows={2}
             />
-            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <div style={{ display: 'flex', gap: 8, marginTop: 8, alignItems: 'center', position: 'relative' }}>
               <button className="btn btn-primary btn-sm" onClick={handleReply}>답글 달기</button>
               <button className="btn btn-secondary btn-sm" onClick={() => setShowReply(false)}>취소</button>
+              <button
+                className="btn btn-secondary btn-sm"
+                style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                onClick={() => setShowEmoticonPicker((v) => !v)}
+                title="이모티콘"
+              >
+                <Smile size={13} />
+              </button>
+              {showEmoticonPicker && (
+                <EmoticonPicker
+                  onSelect={(marker) => {
+                    setReplyText((prev) => prev + marker)
+                    setShowEmoticonPicker(false)
+                  }}
+                  onClose={() => setShowEmoticonPicker(false)}
+                />
+              )}
             </div>
           </div>
         )}

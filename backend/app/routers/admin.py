@@ -1,10 +1,12 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from typing import Optional
+from typing import Optional, List
 
+from sqlalchemy import func
 from app.db.database import get_db
 from app.dependencies import get_current_user, get_super_admin_user
 from app.models.user import User
+from app.models.post import Post
 from app.schemas.admin import (
     AdminStatsResponse,
     PaginatedUsers,
@@ -15,7 +17,9 @@ from app.schemas.admin import (
     BestPostThresholdUpdate,
 )
 from app.schemas.post import NoticeItem
+from app.schemas.category import CategoryCreate, CategoryUpdate, CategoryResponse
 from app.services import admin_service
+from app.services import category_service
 from pydantic import BaseModel
 
 
@@ -143,3 +147,60 @@ def update_best_post_threshold(
 ):
     threshold = admin_service.set_best_post_threshold(db, body.best_post_min_likes)
     return {"best_post_min_likes": threshold}
+
+
+# ─── 게시판 카테고리 관리 ─────────────────────────────────────────────────────
+
+@router.get("/categories", response_model=List[CategoryResponse])
+def list_categories_admin(
+    db: Session = Depends(get_db),
+    admin: User = Depends(_require_admin),
+):
+    """전체 카테고리 목록 (비활성 포함, 관리자 전용)"""
+    return category_service.get_all_categories_admin(db)
+
+
+@router.post("/categories", response_model=CategoryResponse, status_code=201)
+def create_category_admin(
+    data: CategoryCreate,
+    db: Session = Depends(get_db),
+    admin: User = Depends(_require_admin),
+):
+    """카테고리 생성"""
+    return category_service.create_category(db, data)
+
+
+@router.patch("/categories/{cat_id}", response_model=CategoryResponse)
+def update_category_admin(
+    cat_id: int,
+    data: CategoryUpdate,
+    db: Session = Depends(get_db),
+    admin: User = Depends(_require_admin),
+):
+    """카테고리 수정"""
+    cat = category_service.update_category(db, cat_id, data)
+    count = db.query(func.count(Post.id)).filter(
+        Post.category_id == cat_id, Post.is_deleted == False
+    ).scalar()
+    return {
+        "id": cat.id,
+        "name": cat.name,
+        "slug": cat.slug,
+        "description": cat.description,
+        "icon": cat.icon,
+        "order": cat.order,
+        "is_active": cat.is_active,
+        "admin_only": cat.admin_only,
+        "created_at": cat.created_at,
+        "post_count": count,
+    }
+
+
+@router.delete("/categories/{cat_id}", status_code=204)
+def delete_category_admin(
+    cat_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(_require_admin),
+):
+    """카테고리 삭제 (게시글이 없는 경우만 가능)"""
+    category_service.delete_category(db, cat_id)

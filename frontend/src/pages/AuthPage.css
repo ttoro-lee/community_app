@@ -83,3 +83,36 @@
   text-decoration: none;
 }
 .auth-link:hover { text-decoration: underline; }
+
+/* ── 입력 에러 상태 ─────────────────────────────────────────────────────── */
+.input-error {
+  border-color: #ef4444 !important;
+}
+.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+/* ── 필드 힌트 목록 ─────────────────────────────────────────────────────── */
+.field-hint-list {
+  list-style: none;
+  margin: 5px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.field-hint-list li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.hint-ok {
+  color: #16a34a;
+}
+
+.hint-fail {
+  color: #ef4444;
+}

@@ -10,7 +10,7 @@ from app.core.config import settings
 from app.core.logging import setup_logging
 from app.db.database import Base, engine
 from app.routers import users, posts, comments, likes, categories, admin
-from app.routers import upload
+from app.routers import upload, emoticons
 from app.services.category_service import seed_default_categories
 from app.services.admin_service import seed_super_admin
 from app.db.database import SessionLocal
@@ -103,6 +103,10 @@ def run_migrations():
         """))
         logger.info("site_settings 기본값 보장 완료")
 
+        # ── emoticons 테이블 컬럼 추가 (테이블은 create_all로 생성됨) ─────────
+        # create_all이 이미 테이블을 만들었으므로 별도 작업 없음
+        logger.info("emoticons 테이블 확인 완료")
+
         if not added and not added_posts and "admin_only" in existing_cat_cols:
             logger.info("DB 마이그레이션 완료 — 변경 사항 없음")
 
@@ -154,6 +158,7 @@ app.include_router(comments.router, prefix="/api")
 app.include_router(likes.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
 app.include_router(upload.router, prefix="/api")
+app.include_router(emoticons.router, prefix="/api")
 
 # 업로드된 이미지 정적 파일 서빙
 _uploads_dir = Path(__file__).parent.parent / "storage" / "uploads"

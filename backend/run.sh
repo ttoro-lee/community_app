@@ -13,4 +13,4 @@ echo "✅ 서버 시작: http://localhost:8000"
 echo "📖 API 문서: http://localhost:8000/api/docs"
 echo ""
 
-uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4 --reload

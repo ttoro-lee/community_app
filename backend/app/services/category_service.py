@@ -51,6 +51,60 @@ def create_category(db: Session, data: CategoryCreate) -> Category:
     return cat
 
 
+def get_all_categories_admin(db: Session):
+    """비활성 카테고리 포함 전체 목록 (관리자용)"""
+    categories = (
+        db.query(Category)
+        .order_by(Category.order, Category.id)
+        .all()
+    )
+    result = []
+    for cat in categories:
+        count = db.query(func.count(Post.id)).filter(
+            Post.category_id == cat.id, Post.is_deleted == False
+        ).scalar()
+        result.append({
+            "id": cat.id,
+            "name": cat.name,
+            "slug": cat.slug,
+            "description": cat.description,
+            "icon": cat.icon,
+            "order": cat.order,
+            "is_active": cat.is_active,
+            "admin_only": cat.admin_only,
+            "created_at": cat.created_at,
+            "post_count": count,
+        })
+    return result
+
+
+def update_category(db: Session, cat_id: int, data) -> Category:
+    cat = db.query(Category).filter(Category.id == cat_id).first()
+    if not cat:
+        raise HTTPException(status_code=404, detail="카테고리를 찾을 수 없습니다.")
+    for field, value in data.model_dump(exclude_unset=True).items():
+        setattr(cat, field, value)
+    db.commit()
+    db.refresh(cat)
+    return cat
+
+
+def delete_category(db: Session, cat_id: int):
+    cat = db.query(Category).filter(Category.id == cat_id).first()
+    if not cat:
+        raise HTTPException(status_code=404, detail="카테고리를 찾을 수 없습니다.")
+    post_count = db.query(func.count(Post.id)).filter(
+        Post.category_id == cat_id, Post.is_deleted == False
+    ).scalar()
+    if post_count > 0:
+        raise HTTPException(
+            status_code=400,
+            detail=f"이 카테고리에 게시글이 {post_count}개 있습니다. 삭제하려면 먼저 게시글을 다른 카테고리로 옮기거나 삭제해주세요.",
+        )
+    db.delete(cat)
+    db.commit()
+
+
 def seed_default_categories(db: Session):
     defaults = [
         {"name": "자유게시판", "slug": "free", "description": "자유롭게 이야기 나눠요", "icon": "💬", "order": 1, "admin_only": False},

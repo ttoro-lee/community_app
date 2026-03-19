@@ -13,4 +13,3 @@ build/
 .mypy_cache/
 .claude
 storage/
-*.pid

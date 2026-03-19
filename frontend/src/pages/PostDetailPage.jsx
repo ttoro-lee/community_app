@@ -6,7 +6,8 @@ import { adminDeletePost, toggleNotice } from '../api/admin'
 import { useAuth } from '../contexts/AuthContext'
 import CommentItem from '../components/comment/CommentItem'
 import ContentRenderer from '../components/post/ContentRenderer'
-import { Heart, Eye, MessageCircle, Pencil, Trash2, ArrowLeft, ShieldAlert, Pin, PinOff } from 'lucide-react'
+import EmoticonPicker from '../components/emoticon/EmoticonPicker'
+import { Heart, Eye, MessageCircle, Pencil, Trash2, ArrowLeft, ShieldAlert, Pin, PinOff, Smile } from 'lucide-react'
 import { formatDistanceToNow, format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import toast from 'react-hot-toast'
@@ -20,6 +21,7 @@ export default function PostDetailPage() {
   const [newComment, setNewComment] = useState('')
   const [liked, setLiked] = useState(false)
   const [likeCount, setLikeCount] = useState(0)
+  const [showCommentEmoticon, setShowCommentEmoticon] = useState(false)
 
   const { data: post, isLoading } = useQuery(
     ['post', postId],
@@ -222,7 +224,26 @@ export default function PostDetailPage() {
                 rows={3}
               />
             </div>
-            <div className="comment-submit">
+            <div className="comment-submit" style={{ position: 'relative' }}>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                onClick={() => setShowCommentEmoticon((v) => !v)}
+                title="이모티콘"
+              >
+                <Smile size={14} />
+                이모티콘
+              </button>
+              {showCommentEmoticon && (
+                <EmoticonPicker
+                  onSelect={(marker) => {
+                    setNewComment((prev) => prev + marker)
+                    setShowCommentEmoticon(false)
+                  }}
+                  onClose={() => setShowCommentEmoticon(false)}
+                />
+              )}
               <button type="submit" className="btn btn-primary btn-sm" disabled={!newComment.trim()}>
                 댓글 등록
               </button>

@@ -3,8 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useQuery } from 'react-query'
 import { createPost, updatePost, getPost, getCategories, uploadImage } from '../api/posts'
 import { useAuth } from '../contexts/AuthContext'
-import { ArrowLeft, Send, ImagePlus, Video, X } from 'lucide-react'
+import { ArrowLeft, Send, ImagePlus, Video, X, Smile } from 'lucide-react'
 import toast from 'react-hot-toast'
+import EmoticonPicker from '../components/emoticon/EmoticonPicker'
 import './WritePostPage.css'
 
 export default function WritePostPage() {
@@ -17,11 +18,14 @@ export default function WritePostPage() {
   const [categoryId, setCategoryId] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
   const [youtubeInput, setYoutubeInput] = useState('')
   const [showYoutubeInput, setShowYoutubeInput] = useState(false)
+  const [showEmoticonPicker, setShowEmoticonPicker] = useState(false)
 
   const textareaRef = useRef(null)
   const fileInputRef = useRef(null)
+  const emoticonBtnRef = useRef(null)
 
   const { data: allCategories = [] } = useQuery('categories', () =>
     getCategories().then((r) => r.data)
@@ -73,22 +77,66 @@ export default function WritePostPage() {
     }, 0)
   }
 
-  // 이미지 업로드
+  // 이미지 파일 업로드 공통 처리
+  const uploadImageFile = async (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const res = await uploadImage(formData)
+    insertAtCursor(`[image:${res.data.url}]`)
+  }
+
+  // 이미지 업로드 (파일 선택)
   const handleImageUpload = async (e) => {
     const file = e.target.files?.[0]
     if (!file) return
     setUploading(true)
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      const res = await uploadImage(formData)
-      insertAtCursor(`[image:${res.data.url}]`)
+      await uploadImageFile(file)
       toast.success('이미지가 삽입되었습니다.')
     } catch (err) {
       toast.error(err.response?.data?.detail || '이미지 업로드에 실패했습니다.')
     } finally {
       setUploading(false)
       e.target.value = ''
+    }
+  }
+
+  // 드래그 앤 드롭 이미지 업로드
+  const handleDragOver = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      setIsDragging(false)
+    }
+  }
+
+  const handleDrop = async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+    const files = Array.from(e.dataTransfer.files).filter((f) =>
+      ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(f.type)
+    )
+    if (files.length === 0) {
+      toast.error('이미지 파일(jpg, png, gif, webp)만 드래그할 수 있습니다.')
+      return
+    }
+    setUploading(true)
+    try {
+      for (const file of files) {
+        await uploadImageFile(file)
+      }
+      toast.success(files.length > 1 ? `${files.length}개 이미지가 삽입되었습니다.` : '이미지가 삽입되었습니다.')
+    } catch (err) {
+      toast.error(err.response?.data?.detail || '이미지 업로드에 실패했습니다.')
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -209,6 +257,28 @@ export default function WritePostPage() {
                 <Video size={15} />
                 영상 URL
               </button>
+
+              {/* 이모티콘 */}
+              <div className="emoticon-btn-wrap" ref={emoticonBtnRef} style={{ position: 'relative' }}>
+                <button
+                  type="button"
+                  className="media-btn"
+                  onClick={() => setShowEmoticonPicker((v) => !v)}
+                  title="이모티콘 삽입"
+                >
+                  <Smile size={15} />
+                  이모티콘
+                </button>
+                {showEmoticonPicker && (
+                  <EmoticonPicker
+                    onSelect={(marker) => {
+                      insertAtCursor(marker)
+                      setShowEmoticonPicker(false)
+                    }}
+                    onClose={() => setShowEmoticonPicker(false)}
+                  />
+                )}
+              </div>
             </div>
 
             {/* 영상 URL 입력창 */}
@@ -236,14 +306,27 @@ export default function WritePostPage() {
               </div>
             )}
 
-            <textarea
-              ref={textareaRef}
-              className="form-input content-textarea"
-              placeholder="내용을 입력하세요..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              rows={16}
-            />
+            <div
+              className={`textarea-wrap${isDragging ? ' drag-active' : ''}`}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
+              <textarea
+                ref={textareaRef}
+                className="form-input content-textarea"
+                placeholder="내용을 입력하세요..."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                rows={16}
+              />
+              {isDragging && (
+                <div className="drag-overlay">
+                  <ImagePlus size={32} />
+                  <span>이미지를 여기에 놓으세요</span>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="write-actions">

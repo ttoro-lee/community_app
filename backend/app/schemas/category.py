@@ -22,6 +22,7 @@ class CategoryUpdate(BaseModel):
     icon: Optional[str] = None
     is_active: Optional[bool] = None
     order: Optional[int] = None
+    admin_only: Optional[bool] = None
 
 
 class CategoryResponse(CategoryBase):
