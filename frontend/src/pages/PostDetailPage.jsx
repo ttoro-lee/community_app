@@ -7,7 +7,8 @@ import { useAuth } from '../contexts/AuthContext'
 import CommentItem from '../components/comment/CommentItem'
 import ContentRenderer from '../components/post/ContentRenderer'
 import EmoticonPicker from '../components/emoticon/EmoticonPicker'
-import { Heart, Eye, MessageCircle, Pencil, Trash2, ArrowLeft, ShieldAlert, Pin, PinOff, Smile } from 'lucide-react'
+import ReportModal from '../components/report/ReportModal'
+import { Heart, Eye, MessageCircle, Pencil, Trash2, ArrowLeft, ShieldAlert, Pin, PinOff, Smile, Flag } from 'lucide-react'
 import { formatDistanceToNow, format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import toast from 'react-hot-toast'
@@ -22,6 +23,7 @@ export default function PostDetailPage() {
   const [liked, setLiked] = useState(false)
   const [likeCount, setLikeCount] = useState(0)
   const [showCommentEmoticon, setShowCommentEmoticon] = useState(false)
+  const [showReportModal, setShowReportModal] = useState(false)
 
   const { data: post, isLoading } = useQuery(
     ['post', postId],
@@ -190,7 +192,7 @@ export default function PostDetailPage() {
 
         <div className="divider" />
 
-        {/* Like Button */}
+        {/* Like Button + Report Button */}
         <div className="like-section">
           <button
             className={`like-post-btn ${liked ? 'liked' : ''}`}
@@ -200,8 +202,25 @@ export default function PostDetailPage() {
             <span>{likeCount}</span>
             {liked ? '좋아요 취소' : '좋아요'}
           </button>
+          {user && user.id !== post.user_id && (
+            <button
+              className="report-post-btn"
+              onClick={() => setShowReportModal(true)}
+              title="게시글 신고"
+            >
+              <Flag size={18} />
+              신고
+            </button>
+          )}
         </div>
       </article>
+
+      {showReportModal && (
+        <ReportModal
+          postId={parseInt(postId)}
+          onClose={() => setShowReportModal(false)}
+        />
+      )}
 
       {/* Comments */}
       <section className="comments-section">

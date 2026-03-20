@@ -11,6 +11,10 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import ProfilePage from './pages/ProfilePage'
 import AdminPage from './pages/AdminPage'
+import WikiListPage from './pages/WikiListPage'
+import WikiDetailPage from './pages/WikiDetailPage'
+import WikiEditPage from './pages/WikiEditPage'
+import WikiHistoryPage from './pages/WikiHistoryPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -46,6 +50,11 @@ export default function App() {
               <Route path="/posts/:postId/edit" element={<WritePostPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/admin" element={<AdminPage />} />
+              <Route path="/wiki" element={<WikiListPage />} />
+              <Route path="/wiki/new" element={<WikiEditPage />} />
+              <Route path="/wiki/:wikiId" element={<WikiDetailPage />} />
+              <Route path="/wiki/:wikiId/edit" element={<WikiEditPage />} />
+              <Route path="/wiki/:wikiId/history" element={<WikiHistoryPage />} />
             </Route>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />

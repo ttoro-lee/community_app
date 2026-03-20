@@ -129,7 +129,9 @@
 /* Like */
 .like-section {
   display: flex;
+  align-items: center;
   justify-content: center;
+  gap: 12px;
   padding: 8px 0;
 }
 
@@ -156,6 +158,28 @@
 .like-post-btn.liked {
   border-color: var(--danger);
   color: var(--danger);
+  background: #fff5f5;
+}
+
+.report-post-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border: 2px solid var(--border);
+  border-radius: 100px;
+  background: white;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.report-post-btn:hover {
+  border-color: #ef4444;
+  color: #ef4444;
   background: #fff5f5;
 }
 
