@@ -1,0 +1,104 @@
+.wiki-content-renderer {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.wiki-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wiki-section-heading {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+  margin: 0;
+  scroll-margin-top: 80px;
+}
+
+.wiki-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wiki-paragraph {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.wiki-link {
+  color: var(--primary, #6366f1);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: transparent;
+  transition: color 0.15s, text-decoration-color 0.15s;
+  word-break: break-all;
+}
+.wiki-link:hover {
+  color: var(--primary-hover, #4f46e5);
+  text-decoration-color: currentColor;
+}
+
+.wiki-content-empty {
+  color: var(--text-muted);
+  font-size: 14px;
+  padding: 24px 0;
+}
+
+/* ── 이미지 ───────────────────────────────────────────────────────────────── */
+
+.wiki-media-wrap {
+  margin: 8px 0;
+  text-align: center;
+}
+
+.wiki-content-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  display: block;
+  margin: 0 auto;
+}
+
+/* ── 영상 (YouTube / Chzzk) ───────────────────────────────────────────────── */
+
+.wiki-video-wrap {
+  margin: 12px 0;
+}
+
+.wiki-video-inner {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 */
+  height: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #000;
+}
+
+.wiki-video-inner iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 8px;
+}
+
+/* 직접 영상 파일 (mp4·webm 등) */
+.wiki-direct-video {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 8px;
+  background: #000;
+  display: block;
+}

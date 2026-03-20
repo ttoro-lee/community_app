@@ -1,14 +1,17 @@
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useLocation } from 'react-router-dom'
 import { useQuery } from 'react-query'
 import { getCategories } from '../../api/posts'
-import { Home, TrendingUp, Trophy } from 'lucide-react'
+import { Home, TrendingUp, Trophy, BookOpen } from 'lucide-react'
 import './Sidebar.css'
 
 export default function Sidebar() {
   const { categorySlug } = useParams()
+  const location = useLocation()
   const { data: categories = [] } = useQuery('categories', () =>
     getCategories().then((r) => r.data)
   )
+
+  const isWiki = location.pathname.startsWith('/wiki')
 
   return (
     <aside className="sidebar">
@@ -26,6 +29,10 @@ export default function Sidebar() {
           <Link to="/board/best" className={`sidebar-item ${categorySlug === 'best' ? 'active' : ''}`}>
             <Trophy size={16} />
             베스트 게시글
+          </Link>
+          <Link to="/wiki" className={`sidebar-item ${isWiki ? 'active' : ''}`}>
+            <BookOpen size={16} />
+            위키
           </Link>
         </nav>
       </div>

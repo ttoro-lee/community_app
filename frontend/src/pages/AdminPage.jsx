@@ -29,6 +29,11 @@ import {
   Check,
   Lock,
   Unlock,
+  Flag,
+  CheckCircle,
+  ExternalLink,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import {
@@ -49,6 +54,7 @@ import {
   deleteEmoticon,
   toggleEmoticon,
 } from '../api/emoticons'
+import { getReportedPosts, resolveReports } from '../api/reports'
 import toast from 'react-hot-toast'
 import './AdminPage.css'
 
@@ -858,6 +864,191 @@ function EmoticonSection() {
   )
 }
 
+// ─── 신고 관리 섹션 ───────────────────────────────────────────────────────────
+
+function ReportsSection() {
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  const [page, setPage] = useState(1)
+  const [includeResolved, setIncludeResolved] = useState(false)
+  const [expandedPostId, setExpandedPostId] = useState(null)
+
+  const { data, isLoading } = useQuery(
+    ['adminReports', page, includeResolved],
+    () => getReportedPosts({ page, size: 20, include_resolved: includeResolved }),
+    { keepPreviousData: true }
+  )
+
+  const resolveMutation = useMutation(
+    (postId) => resolveReports(postId),
+    {
+      onSuccess: (res) => {
+        queryClient.invalidateQueries('adminReports')
+        toast.success(`신고 ${res.resolved_count}건이 처리되었습니다.`)
+      },
+      onError: () => toast.error('처리 중 오류가 발생했습니다.'),
+    }
+  )
+
+  const totalPages = data ? data.pages : 1
+
+  const formatDate = (dateStr) => {
+    const d = new Date(dateStr)
+    return d.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
+  }
+
+  return (
+    <div className="admin-section">
+      <div className="admin-section-header">
+        <h2 className="admin-section-title">
+          <Flag size={16} />
+          신고 관리
+          {data && data.total > 0 && (
+            <span className="report-badge">{data.total}</span>
+          )}
+        </h2>
+        <label className="report-resolved-toggle">
+          <input
+            type="checkbox"
+            checked={includeResolved}
+            onChange={(e) => { setIncludeResolved(e.target.checked); setPage(1) }}
+          />
+          처리 완료 포함
+        </label>
+      </div>
+
+      {isLoading ? (
+        <p className="emoticon-loading">불러오는 중...</p>
+      ) : !data || data.items.length === 0 ? (
+        <p className="emoticon-empty">
+          {includeResolved ? '신고된 게시글이 없습니다.' : '미처리 신고가 없습니다.'}
+        </p>
+      ) : (
+        <div className="report-table-wrap">
+          <table className="user-table report-table">
+            <thead>
+              <tr>
+                <th>게시글</th>
+                <th>작성자</th>
+                <th style={{ textAlign: 'center' }}>신고 수</th>
+                <th style={{ textAlign: 'center' }}>미처리</th>
+                <th>최근 신고</th>
+                <th style={{ textAlign: 'center' }}>액션</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.items.map((item) => (
+                <>
+                  <tr
+                    key={item.post_id}
+                    className={`report-row ${item.post_is_deleted ? 'report-row-deleted' : ''}`}
+                  >
+                    <td className="report-post-title-cell">
+                      <button
+                        className="report-expand-btn"
+                        onClick={() => setExpandedPostId(expandedPostId === item.post_id ? null : item.post_id)}
+                        title="신고 내역 펼치기"
+                      >
+                        {expandedPostId === item.post_id ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                      </button>
+                      <span
+                        className={`report-post-title ${item.post_is_deleted ? 'deleted-title' : ''}`}
+                        title={item.post_title}
+                      >
+                        {item.post_is_deleted && <span className="deleted-badge">삭제됨</span>}
+                        {item.post_title}
+                      </span>
+                      {!item.post_is_deleted && (
+                        <button
+                          className="report-goto-btn"
+                          onClick={() => navigate(`/posts/${item.post_id}`)}
+                          title="게시글로 이동"
+                        >
+                          <ExternalLink size={12} />
+                        </button>
+                      )}
+                    </td>
+                    <td className="td-nickname">{item.author_nickname || '-'}</td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span className="report-count-badge">{item.report_count}</span>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      {item.unresolved_count > 0 ? (
+                        <span className="badge-suspended">{item.unresolved_count}</span>
+                      ) : (
+                        <span className="badge-active">완료</span>
+                      )}
+                    </td>
+                    <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                      {formatDate(item.latest_report_at)}
+                    </td>
+                    <td className="td-actions" style={{ justifyContent: 'center' }}>
+                      {item.unresolved_count > 0 && (
+                        <button
+                          className="action-btn action-unsuspend"
+                          title="신고 처리 완료"
+                          onClick={() => {
+                            if (confirm(`"${item.post_title}" 게시글의 신고 ${item.unresolved_count}건을 처리 완료로 표시할까요?`)) {
+                              resolveMutation.mutate(item.post_id)
+                            }
+                          }}
+                          disabled={resolveMutation.isLoading}
+                        >
+                          <CheckCircle size={13} />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                  {expandedPostId === item.post_id && (
+                    <tr key={`${item.post_id}-detail`} className="report-detail-row">
+                      <td colSpan={6}>
+                        <div className="report-detail-list">
+                          <div className="report-detail-header">신고 내역 ({item.reports.length}건)</div>
+                          {item.reports.map((r) => (
+                            <div key={r.id} className={`report-detail-item ${r.is_resolved ? 'resolved' : ''}`}>
+                              <div className="report-detail-meta">
+                                <span className="report-detail-reporter">
+                                  {r.reporter?.nickname || '알 수 없음'}
+                                  <span className="report-detail-username">(@{r.reporter?.username || '-'})</span>
+                                </span>
+                                <span className="report-detail-date">{formatDate(r.created_at)}</span>
+                                {r.is_resolved && <span className="report-resolved-tag">처리완료</span>}
+                              </div>
+                              <div className="report-detail-reason">{r.reason}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button className="page-btn" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
+            <ChevronLeft size={14} />
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1)
+            .filter((p) => Math.abs(p - page) <= 2)
+            .map((p) => (
+              <button key={p} className={`page-btn ${p === page ? 'active' : ''}`} onClick={() => setPage(p)}>
+                {p}
+              </button>
+            ))}
+          <button className="page-btn" disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}>
+            <ChevronRight size={14} />
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── 메인 페이지 ──────────────────────────────────────────────────────────────
 
 export default function AdminPage() {
@@ -1198,6 +1389,9 @@ export default function AdminPage() {
           )}
         </div>
       </div>
+
+      {/* 신고 관리 */}
+      <ReportsSection />
 
       {/* 게시판 카테고리 관리 */}
       <CategorySection />

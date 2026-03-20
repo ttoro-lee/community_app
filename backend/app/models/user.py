@@ -32,3 +32,4 @@ class User(Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
+    reports = relationship("Report", back_populates="reporter", cascade="all, delete-orphan")

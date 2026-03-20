@@ -18,8 +18,10 @@ from app.schemas.admin import (
 )
 from app.schemas.post import NoticeItem
 from app.schemas.category import CategoryCreate, CategoryUpdate, CategoryResponse
+from app.schemas.report import PaginatedReportedPosts
 from app.services import admin_service
 from app.services import category_service
+from app.services import report_service
 from pydantic import BaseModel
 
 
@@ -204,3 +206,28 @@ def delete_category_admin(
 ):
     """카테고리 삭제 (게시글이 없는 경우만 가능)"""
     category_service.delete_category(db, cat_id)
+
+
+# ─── 신고된 게시글 관리 ───────────────────────────────────────────────────────
+
+@router.get("/reports", response_model=PaginatedReportedPosts)
+def list_reported_posts(
+    page: int = Query(1, ge=1),
+    size: int = Query(20, ge=1, le=100),
+    include_resolved: bool = Query(False),
+    db: Session = Depends(get_db),
+    admin: User = Depends(_require_admin),
+):
+    """신고된 게시글 목록 (신고 횟수 내림차순)"""
+    return report_service.get_reported_posts(db, page, size, include_resolved)
+
+
+@router.patch("/reports/{post_id}/resolve", status_code=200)
+def resolve_post_reports(
+    post_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(_require_admin),
+):
+    """특정 게시글의 신고를 처리 완료로 표시"""
+    count = report_service.resolve_reports(db, post_id)
+    return {"resolved_count": count}

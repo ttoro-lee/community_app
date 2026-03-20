@@ -10,7 +10,7 @@ from app.core.config import settings
 from app.core.logging import setup_logging
 from app.db.database import Base, engine
 from app.routers import users, posts, comments, likes, categories, admin
-from app.routers import upload, emoticons, notifications
+from app.routers import upload, emoticons, notifications, reports, wiki
 from app.services.category_service import seed_default_categories
 from app.services.admin_service import seed_super_admin
 from app.db.database import SessionLocal
@@ -110,6 +110,12 @@ def run_migrations():
         # ── notifications 테이블 (create_all로 생성됨) ────────────────────────
         logger.info("notifications 테이블 확인 완료")
 
+        # ── reports 테이블 (create_all로 생성됨) ──────────────────────────────
+        logger.info("reports 테이블 확인 완료")
+
+        # ── wiki 테이블 (create_all로 생성됨) ─────────────────────────────────
+        logger.info("wiki_documents / wiki_revisions 테이블 확인 완료")
+
         if not added and not added_posts and "admin_only" in existing_cat_cols:
             logger.info("DB 마이그레이션 완료 — 변경 사항 없음")
 
@@ -163,6 +169,8 @@ app.include_router(admin.router, prefix="/api")
 app.include_router(upload.router, prefix="/api")
 app.include_router(emoticons.router, prefix="/api")
 app.include_router(notifications.router, prefix="/api")
+app.include_router(reports.router, prefix="/api")
+app.include_router(wiki.router, prefix="/api")
 
 # 업로드된 이미지 정적 파일 서빙
 _uploads_dir = Path(__file__).parent.parent / "storage" / "uploads"
