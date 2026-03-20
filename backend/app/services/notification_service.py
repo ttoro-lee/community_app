@@ -79,6 +79,7 @@ def _to_response(n: Notification) -> NotificationResponse:
         post_id=n.post_id,
         post_title=n.post.title if n.post and not n.post.is_deleted else None,
         comment_id=n.comment_id,
+        arena_id=getattr(n, "arena_id", None),
         is_read=n.is_read,
         created_at=n.created_at,
     )

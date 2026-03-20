@@ -8,3 +8,4 @@ from app.models.emoticon import Emoticon
 from app.models.notification import Notification
 from app.models.report import Report
 from app.models.wiki import WikiDocument, WikiRevision
+from app.models.arena import Arena, ArenaMessage, ArenaVote
