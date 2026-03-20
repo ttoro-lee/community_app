@@ -15,6 +15,8 @@ import WikiListPage from './pages/WikiListPage'
 import WikiDetailPage from './pages/WikiDetailPage'
 import WikiEditPage from './pages/WikiEditPage'
 import WikiHistoryPage from './pages/WikiHistoryPage'
+import ArenaListPage from './pages/ArenaListPage'
+import ArenaDetailPage from './pages/ArenaDetailPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -55,6 +57,8 @@ export default function App() {
               <Route path="/wiki/:wikiId" element={<WikiDetailPage />} />
               <Route path="/wiki/:wikiId/edit" element={<WikiEditPage />} />
               <Route path="/wiki/:wikiId/history" element={<WikiHistoryPage />} />
+              <Route path="/arena" element={<ArenaListPage />} />
+              <Route path="/arena/:arenaId" element={<ArenaDetailPage />} />
             </Route>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />

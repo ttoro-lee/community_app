@@ -1,7 +1,7 @@
 import { Link, useParams, useLocation } from 'react-router-dom'
 import { useQuery } from 'react-query'
 import { getCategories } from '../../api/posts'
-import { Home, TrendingUp, Trophy, BookOpen } from 'lucide-react'
+import { Home, TrendingUp, Trophy, BookOpen, Swords } from 'lucide-react'
 import './Sidebar.css'
 
 export default function Sidebar() {
@@ -12,6 +12,7 @@ export default function Sidebar() {
   )
 
   const isWiki = location.pathname.startsWith('/wiki')
+  const isArena = location.pathname.startsWith('/arena')
 
   return (
     <aside className="sidebar">
@@ -33,6 +34,10 @@ export default function Sidebar() {
           <Link to="/wiki" className={`sidebar-item ${isWiki ? 'active' : ''}`}>
             <BookOpen size={16} />
             위키
+          </Link>
+          <Link to="/arena" className={`sidebar-item ${isArena ? 'active' : ''}`}>
+            <Swords size={16} />
+            아레나
           </Link>
         </nav>
       </div>

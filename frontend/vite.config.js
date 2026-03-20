@@ -11,6 +11,7 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true,
+        ws: true,  // WebSocket 프록시 활성화 (아레나 실시간 채팅)
       },
     },
   },

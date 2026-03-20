@@ -10,7 +10,7 @@ from app.core.config import settings
 from app.core.logging import setup_logging
 from app.db.database import Base, engine
 from app.routers import users, posts, comments, likes, categories, admin
-from app.routers import upload, emoticons, notifications, reports, wiki
+from app.routers import upload, emoticons, notifications, reports, wiki, arena
 from app.services.category_service import seed_default_categories
 from app.services.admin_service import seed_super_admin
 from app.db.database import SessionLocal
@@ -116,6 +116,17 @@ def run_migrations():
         # ── wiki 테이블 (create_all로 생성됨) ─────────────────────────────────
         logger.info("wiki_documents / wiki_revisions 테이블 확인 완료")
 
+        # ── arena 관련 테이블 (create_all로 생성됨) ────────────────────────────
+        logger.info("arenas / arena_messages / arena_votes 테이블 확인 완료")
+
+        # ── notifications 테이블에 arena_id 컬럼 추가 (기존 테이블 대응) ──────
+        existing_notif_cols = {c["name"] for c in inspector.get_columns("notifications")}
+        if "arena_id" not in existing_notif_cols:
+            conn.execute(text(
+                "ALTER TABLE notifications ADD COLUMN arena_id INTEGER REFERENCES arenas(id) ON DELETE CASCADE"
+            ))
+            logger.info("notifications 테이블 arena_id 컬럼 추가 완료")
+
         if not added and not added_posts and "admin_only" in existing_cat_cols:
             logger.info("DB 마이그레이션 완료 — 변경 사항 없음")
 
@@ -171,6 +182,7 @@ app.include_router(emoticons.router, prefix="/api")
 app.include_router(notifications.router, prefix="/api")
 app.include_router(reports.router, prefix="/api")
 app.include_router(wiki.router, prefix="/api")
+app.include_router(arena.router, prefix="/api")
 
 # 업로드된 이미지 정적 파일 서빙
 _uploads_dir = Path(__file__).parent.parent / "storage" / "uploads"

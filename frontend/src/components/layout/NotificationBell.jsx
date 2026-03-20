@@ -63,7 +63,7 @@ export default function NotificationBell() {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  /* ── 알림 클릭 → 읽음 처리 후 해당 게시글로 이동 ── */
+  /* ── 알림 클릭 → 읽음 처리 후 해당 위치로 이동 ── */
   const handleNotifClick = async (notif) => {
     if (!notif.is_read) {
       await markAsRead(notif.id)
@@ -72,7 +72,9 @@ export default function NotificationBell() {
       )
       setUnreadCount((c) => Math.max(0, c - 1))
     }
-    if (notif.post_id) {
+    if (notif.type === 'arena_invite' && notif.arena_id) {
+      navigate(`/arena/${notif.arena_id}`)
+    } else if (notif.post_id) {
       navigate(`/posts/${notif.post_id}`)
     }
     setOpen(false)
@@ -90,6 +92,7 @@ export default function NotificationBell() {
     const actor = n.actor_nickname || '누군가'
     if (n.type === 'comment_on_post') return `${actor}님이 내 글에 댓글을 달았습니다.`
     if (n.type === 'reply_on_comment') return `${actor}님이 내 댓글에 대댓글을 달았습니다.`
+    if (n.type === 'arena_invite') return `⚔️ ${actor}님이 아레나에 도전장을 보냈습니다!`
     return '새 알림이 있습니다.'
   }
 

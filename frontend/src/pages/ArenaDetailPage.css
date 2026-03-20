@@ -1,0 +1,506 @@
+.arena-detail-page {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 1000px;
+}
+
+.arena-detail-loading {
+  padding: 60px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* 뒤로 */
+.arena-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-secondary);
+  padding: 4px 0;
+  font-family: inherit;
+  transition: color 0.15s;
+}
+.arena-back-btn:hover { color: var(--primary); }
+
+/* 헤더 */
+.arena-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 20px;
+}
+.arena-detail-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  flex: 1;
+}
+
+/* 타이머 */
+.arena-timer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  border-radius: 100px;
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  transition: all 0.3s;
+}
+.arena-timer.warn {
+  border-color: #f59e0b;
+  color: #b45309;
+  background: #fffbeb;
+}
+.arena-timer.danger {
+  border-color: #ef4444;
+  color: #991b1b;
+  background: #fef2f2;
+  animation: arena-danger-pulse 0.6s infinite;
+}
+@keyframes arena-danger-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.arena-spectator-count {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+/* 수락/거절 배너 */
+.arena-invite-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #eef2ff 0%, #f0fdf4 100%);
+  border: 2px solid var(--primary);
+  border-radius: 12px;
+}
+.arena-invite-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.arena-invite-actions { display: flex; gap: 8px; }
+.arena-accept-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 20px;
+  background: #16a34a;
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.arena-accept-btn:hover { background: #15803d; }
+.arena-decline-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  background: none;
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  border-radius: 9px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.arena-decline-btn:hover { background: #fef2f2; }
+
+.arena-waiting-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--text-muted);
+  animation: arena-pulse 2s infinite;
+}
+
+/* 메인 레이아웃 */
+.arena-detail-body {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+/* 참가자 열 */
+.arena-players-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 220px;
+  flex-shrink: 0;
+}
+
+/* 참가자 카드 */
+.arena-player-card {
+  width: 100%;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.arena-player-card.winner {
+  border-color: #f59e0b;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef9c3 100%);
+  box-shadow: 0 0 0 3px rgba(245,158,11,.2);
+}
+.arena-player-card.loser {
+  border-color: #9ca3af;
+  background: var(--bg-secondary);
+  opacity: 0.8;
+}
+
+/* 승패 아이콘 */
+.arena-result-crown {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #f59e0b;
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.arena-result-skull {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #6b7280;
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.arena-player-avatar-lg {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.arena-player-avatar--creator { background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%); }
+.arena-player-avatar--opponent { background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%); }
+
+.arena-player-nickname {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.arena-vote-info {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.arena-vote-num { font-size: 20px; font-weight: 800; color: var(--text-primary); }
+.arena-vote-pct { font-size: 12px; color: var(--text-muted); }
+
+.arena-vote-bar-sm {
+  width: 100%;
+  height: 6px;
+  background: var(--bg-secondary);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.arena-vote-bar-fill-sm {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 0.4s ease;
+}
+
+/* 투표 버튼 */
+.arena-vote-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 16px;
+  border: 2px solid var(--border);
+  border-radius: 100px;
+  background: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+.arena-vote-btn:hover { border-color: var(--primary); color: var(--primary); }
+.arena-vote-btn.voted {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+/* VS 구분선 */
+.arena-vs-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.arena-draw-badge {
+  width: 100%;
+  text-align: center;
+  padding: 8px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.arena-login-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+.arena-login-hint a { color: var(--primary); }
+
+/* 채팅 열 */
+.arena-chat-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.arena-chat-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.arena-chat-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.arena-messages {
+  flex: 1;
+  min-height: 320px;
+  max-height: 480px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 0;
+  scrollbar-width: thin;
+}
+
+.arena-messages-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 120px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* 메시지 */
+.arena-msg {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.arena-msg--sending {
+  opacity: 0.55;
+  transition: opacity 0.2s;
+}
+.arena-msg--opponent { flex-direction: row-reverse; }
+
+.arena-msg-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.arena-msg-avatar--creator { background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%); }
+.arena-msg-avatar--opponent { background: linear-gradient(135deg, #ec4899 0%, #f472b6 100%); }
+
+.arena-msg-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-width: 70%;
+}
+.arena-msg--opponent .arena-msg-body { align-items: flex-end; }
+
+.arena-msg-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.arena-msg-bubble {
+  padding: 9px 13px;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border-bottom-left-radius: 4px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+.arena-msg--opponent .arena-msg-bubble {
+  background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%);
+  border-radius: 12px;
+  border-bottom-right-radius: 4px;
+}
+
+/* 입력창 */
+.arena-chat-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.arena-chat-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+.arena-chat-input:focus { outline: none; border-color: var(--primary); }
+
+.arena-send-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.arena-send-btn:hover { background: var(--primary-hover, #4f46e5); }
+.arena-send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.arena-chat-ended, .arena-spectator-notice {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 8px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+}
+
+/* 배지 */
+.arena-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.arena-badge--pending  { background: #fef3c7; color: #92400e; }
+.arena-badge--active   { background: #dcfce7; color: #166534; }
+.arena-badge--finished { background: var(--bg-secondary); color: var(--text-muted); }
+
+/* 반응형 */
+@media (max-width: 680px) {
+  .arena-detail-body { flex-direction: column; }
+  .arena-players-col {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .arena-player-card { width: calc(50% - 30px); min-width: 140px; }
+  .arena-vs-divider { width: 36px; height: 36px; }
+}
