@@ -222,6 +222,14 @@ def get_arena(db: Session, arena_id: int) -> Arena:
     return _auto_finish(db, arena)
 
 
+# ── 아레나 삭제 (관리자 전용) ─────────────────────────────────────────────────
+
+def delete_arena(db: Session, arena_id: int) -> None:
+    arena = _get_or_404(db, arena_id)
+    db.delete(arena)
+    db.commit()
+
+
 # ── 내부 헬퍼 ─────────────────────────────────────────────────────────────────
 
 def _get_or_404(db: Session, arena_id: int) -> Arena:

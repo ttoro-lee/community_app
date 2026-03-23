@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from 'react-query'
-import { getArenas, createArena, searchUsers } from '../api/arena'
+import { getArenas, createArena, searchUsers, deleteArena } from '../api/arena'
 import { useAuth } from '../contexts/AuthContext'
-import { Swords, Plus, Clock, Users, Crown, Search, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Swords, Plus, Clock, Users, Crown, Search, X, ChevronLeft, ChevronRight, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import './ArenaListPage.css'
 
@@ -140,17 +140,34 @@ function CreateArenaModal({ onClose }) {
 
 // ── 아레나 카드 ───────────────────────────────────────────────────────────────
 
-function ArenaCard({ arena }) {
+function ArenaCard({ arena, isAdmin, onDelete }) {
   const badge = STATUS_LABEL[arena.status] || { text: arena.status, cls: '' }
   const totalVotes = arena.creator_votes + arena.opponent_votes
+
+  const handleDelete = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    onDelete(arena)
+  }
 
   return (
     <Link to={`/arena/${arena.id}`} className="arena-card">
       <div className="arena-card-top">
         <span className={`arena-badge ${badge.cls}`}>{badge.text}</span>
-        <span className="arena-card-time">
-          <Clock size={12} /> {arena.duration_minutes}분
-        </span>
+        <div className="arena-card-top-right">
+          <span className="arena-card-time">
+            <Clock size={12} /> {arena.duration_minutes}분
+          </span>
+          {isAdmin && (
+            <button
+              className="arena-admin-delete-btn"
+              onClick={handleDelete}
+              title="아레나 삭제 (관리자)"
+            >
+              <Trash2 size={13} />
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="arena-card-players">
@@ -198,14 +215,31 @@ function ArenaCard({ arena }) {
 export default function ArenaListPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [statusFilter, setStatusFilter] = useState('')
   const [showCreate, setShowCreate] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState(null) // 삭제 확인 모달용
 
   const { data, isLoading } = useQuery(
     ['arenas', page, statusFilter],
     () => getArenas({ page, size: 12, status: statusFilter || undefined }),
     { keepPreviousData: true }
+  )
+
+  const deleteMutation = useMutation(
+    (id) => deleteArena(id),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('arenas')
+        toast.success('아레나가 삭제되었습니다.')
+        setDeleteTarget(null)
+      },
+      onError: (err) => {
+        toast.error(err.response?.data?.detail || '삭제에 실패했습니다.')
+        setDeleteTarget(null)
+      },
+    }
   )
 
   const handleCreateClose = (newId) => {
@@ -257,7 +291,14 @@ export default function ArenaListPage() {
         </div>
       ) : (
         <div className="arena-grid">
-          {data.items.map((a) => <ArenaCard key={a.id} arena={a} />)}
+          {data.items.map((a) => (
+            <ArenaCard
+              key={a.id}
+              arena={a}
+              isAdmin={!!user?.is_admin}
+              onDelete={setDeleteTarget}
+            />
+          ))}
         </div>
       )}
 
@@ -283,6 +324,36 @@ export default function ArenaListPage() {
       )}
 
       {showCreate && <CreateArenaModal onClose={handleCreateClose} />}
+
+      {/* 삭제 확인 모달 */}
+      {deleteTarget && (
+        <div className="arena-modal-overlay" onClick={() => setDeleteTarget(null)}>
+          <div className="arena-modal-box arena-delete-confirm-box" onClick={(e) => e.stopPropagation()}>
+            <div className="arena-modal-header">
+              <Trash2 size={18} style={{ color: '#ef4444' }} />
+              <h3>아레나 삭제</h3>
+              <button className="arena-modal-close" onClick={() => setDeleteTarget(null)}><X size={16} /></button>
+            </div>
+            <div className="arena-delete-confirm-body">
+              <p>
+                <strong>{deleteTarget.creator.nickname}</strong> vs <strong>{deleteTarget.opponent.nickname}</strong>
+              </p>
+              <p className="arena-delete-confirm-warning">이 아레나를 삭제하면 메시지와 투표 데이터가 모두 사라집니다. 계속할까요?</p>
+            </div>
+            <div className="arena-modal-actions">
+              <button className="arena-btn-ghost" onClick={() => setDeleteTarget(null)}>취소</button>
+              <button
+                className="arena-btn-danger"
+                disabled={deleteMutation.isLoading}
+                onClick={() => deleteMutation.mutate(deleteTarget.id)}
+              >
+                <Trash2 size={14} />
+                {deleteMutation.isLoading ? '삭제 중...' : '삭제'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

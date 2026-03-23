@@ -122,6 +122,64 @@
   justify-content: space-between;
 }
 
+.arena-card-top-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.arena-admin-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  padding: 0;
+}
+.arena-admin-delete-btn:hover {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.arena-delete-confirm-box {
+  max-width: 380px;
+}
+.arena-delete-confirm-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.arena-delete-confirm-warning {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.arena-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.arena-btn-danger:hover { background: #dc2626; }
+.arena-btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* 배지 */
 .arena-badge {
   display: inline-flex;

@@ -29,3 +29,6 @@ export const getVotes = (id) =>
 
 export const searchUsers = (q) =>
   client.get('/arenas/users/search', { params: { q } }).then((r) => r.data)
+
+export const deleteArena = (id) =>
+  client.delete(`/arenas/${id}`)
