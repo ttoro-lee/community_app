@@ -1,6 +1,6 @@
 .sidebar {
   position: sticky;
-  top: 80px;
+  top: 85px; /* 헤더 높이(60px) + 테두리(1px) + layout-body padding-top(24px) */
   display: flex;
   flex-direction: column;
   gap: 8px;

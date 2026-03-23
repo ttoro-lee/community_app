@@ -131,8 +131,8 @@ def send_message(db: Session, arena_id: int, user_id: int, content: str) -> Aren
 
 def cast_vote(db: Session, arena_id: int, voter_id: int, voted_for_id: int) -> ArenaVote:
     arena = _get_or_404(db, arena_id)
-    if arena.status not in ("active", "finished"):
-        raise HTTPException(400, "진행 중이거나 종료된 아레나에서만 투표할 수 있습니다.")
+    if arena.status != "active":
+        raise HTTPException(400, "진행 중인 아레나에서만 투표할 수 있습니다. 아레나가 종료되면 투표할 수 없습니다.")
     if voter_id in (arena.creator_id, arena.opponent_id):
         raise HTTPException(403, "아레나 참가자는 투표할 수 없습니다.")
     if voted_for_id not in (arena.creator_id, arena.opponent_id):
@@ -220,6 +220,14 @@ def get_arenas(
 def get_arena(db: Session, arena_id: int) -> Arena:
     arena = _get_or_404(db, arena_id)
     return _auto_finish(db, arena)
+
+
+# ── 아레나 삭제 (관리자 전용) ─────────────────────────────────────────────────
+
+def delete_arena(db: Session, arena_id: int) -> None:
+    arena = _get_or_404(db, arena_id)
+    db.delete(arena)
+    db.commit()
 
 
 # ── 내부 헬퍼 ─────────────────────────────────────────────────────────────────

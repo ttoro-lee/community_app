@@ -190,6 +190,17 @@ async def cast_vote(
     return votes
 
 
+@router.delete("/{arena_id}", status_code=204)
+def delete_arena(
+    arena_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="관리자만 아레나를 삭제할 수 있습니다.")
+    arena_service.delete_arena(db, arena_id)
+
+
 @router.get("/{arena_id}/votes")
 def get_votes(
     arena_id: int,

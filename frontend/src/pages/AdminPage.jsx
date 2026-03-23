@@ -1003,6 +1003,17 @@ function ReportsSection() {
                     <tr key={`${item.post_id}-detail`} className="report-detail-row">
                       <td colSpan={6}>
                         <div className="report-detail-list">
+                          {/* 게시글 본문 미리보기 */}
+                          {item.post_content && (
+                            <div className="report-post-preview">
+                              <div className="report-post-preview-label">📄 게시글 본문</div>
+                              <div className="report-post-preview-content">
+                                {item.post_content.length > 500
+                                  ? item.post_content.slice(0, 500) + '…'
+                                  : item.post_content}
+                              </div>
+                            </div>
+                          )}
                           <div className="report-detail-header">신고 내역 ({item.reports.length}건)</div>
                           {item.reports.map((r) => (
                             <div key={r.id} className={`report-detail-item ${r.is_resolved ? 'resolved' : ''}`}>

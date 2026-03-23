@@ -4,7 +4,7 @@ import { reportPost } from '../../api/reports'
 import toast from 'react-hot-toast'
 import './ReportModal.css'
 
-export default function ReportModal({ postId, onClose }) {
+export default function ReportModal({ postId, onClose, onSuccess }) {
   const [reason, setReason] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -15,7 +15,8 @@ export default function ReportModal({ postId, onClose }) {
     try {
       await reportPost({ post_id: postId, reason: reason.trim() })
       toast.success('신고가 접수되었습니다.')
-      onClose()
+      if (onSuccess) onSuccess()
+      else onClose()
     } catch (err) {
       toast.error(err.response?.data?.detail || '신고 처리 중 오류가 발생했습니다.')
     } finally {

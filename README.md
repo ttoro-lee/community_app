@@ -2,6 +2,10 @@
 
 FastAPI + PostgreSQL + React(Vite)로 구축된 풀스택 커뮤니티 플랫폼입니다.
 
+## 미리보기
+
+![커뮤니티 홈 화면](./docs/preview.png)
+
 ---
 
 ## 기술 스택
@@ -10,6 +14,7 @@ FastAPI + PostgreSQL + React(Vite)로 구축된 풀스택 커뮤니티 플랫폼
 |------|------|
 | **백엔드** | FastAPI, SQLAlchemy (ORM), PostgreSQL, JWT (Bearer) |
 | **프론트엔드** | React 18, Vite, React Query, React Router v6 |
+| **실시간** | WebSocket (아레나 실시간 배틀) |
 | **기타** | Pydantic v2, pydantic-settings, python-jose, bcrypt, uv |
 
 ---
@@ -22,14 +27,15 @@ FastAPI + PostgreSQL + React(Vite)로 구축된 풀스택 커뮤니티 플랫폼
 - 비밀번호 변경
 - 계정 탈퇴 (비밀번호 확인 후 처리)
 - 내가 쓴 글 목록 조회
-- 내가 쓴 댓글 목록 조회 (댓글/대댓글 구분)
+- 내가 쓴 댓글 목록 조회 (댓글 / 대댓글 구분)
 
 ### 알림
 - 내 게시글에 댓글 또는 대댓글이 달리면 알림 생성
 - 내 댓글에 대댓글이 달리면 알림 생성 (중복 수신 방지)
-- 자기 자신의 글/댓글에는 알림 생성 안 함
+- 아레나 초대 수신 시 알림 생성
+- 자기 자신의 글 / 댓글에는 알림 생성 안 함
 - 헤더 벨 아이콘에 미읽음 수 뱃지 표시 (30초 폴링)
-- 알림 클릭 시 해당 게시글로 이동 및 읽음 처리
+- 알림 클릭 시 해당 게시글 또는 아레나로 이동 및 읽음 처리
 - 단건 읽음 / 전체 읽음 지원
 
 ### 게시판
@@ -38,10 +44,16 @@ FastAPI + PostgreSQL + React(Vite)로 구축된 풀스택 커뮤니티 플랫폼
 - 제목 + 본문 통합 검색
 - 페이지네이션
 - 게시글 핀 고정 (`is_pinned`)
-- 이미지 첨부 (jpg · png · gif · webp, 최대 10 MB)
+- 이미지 첨부 — 3가지 방법 지원:
+  - 파일 선택 버튼 (jpg · png · gif · webp, 최대 10 MB)
+  - 드래그 앤 드롭
+  - 클립보드 붙여넣기 (Ctrl+V)
+- YouTube / Chzzk 영상 URL 임베드
+- 이모티콘 피커로 커스텀 이모티콘 삽입
+- 게시글 신고 (사용자당 1회, 중복 신고 방지)
 
 ### 공지사항
-- 관리자가 일반 게시글을 공지사항으로 등록/해제
+- 관리자가 일반 게시글을 공지사항으로 등록 / 해제
 - 동시에 최대 10개까지 등록 가능
 - 공지 등록 시 원래 카테고리 보존 → 해제 시 자동 복원
 
@@ -60,8 +72,33 @@ FastAPI + PostgreSQL + React(Vite)로 구축된 풀스택 커뮤니티 플랫폼
 
 ### 이모티콘
 - 관리자가 이모티콘 등록 / 삭제 / 활성화 토글
-- 게시글 작성 시 이모티콘 피커에서 선택 가능
+- 게시글 작성 시 이모티콘 피커에서 선택하여 삽입
 - 이미지 형식: jpg · png · gif · webp, 최대 5 MB
+
+### 위키 (Wiki)
+- 누구나 위키 문서 열람 (조회수 증가)
+- 로그인한 사용자라면 위키 문서 생성 및 수정 가능
+- **섹션 기반 편집**: 단락(heading + content) 단위로 구성
+- **리비전 히스토리**: 모든 수정 이력 보존, 과거 버전 열람 가능
+- 제목 검색 지원, 페이지네이션
+- 본문 내 하이퍼링크 마크다운 `[텍스트](url)` 지원
+- 관리자: 위키 문서 삭제 가능
+
+### 아레나 (Arena)
+- 두 유저가 맞붙는 **실시간 토론 배틀** 기능
+- **초대 → 수락 / 거절 → 진행 → 종료** 4단계 상태 흐름
+- **WebSocket 실시간 통신**: 메시지, 투표 수, 관전자 수 즉시 반영
+- 진행 시간 선택: 5 / 10 / 15 / 20 / 25 / 30분
+- 아레나 참가자는 실시간 채팅으로 토론
+- 관전자는 승자에게 투표 (참가자 본인은 투표 불가)
+- 종료 후 투표 마감 및 결과 표시 (무승부 포함 0:0 포함)
+- 관리자: 아레나 목록에서 아레나 삭제 가능
+
+### 신고 관리
+- 게시글 작성자 본인을 제외한 누구나 신고 가능
+- 동일 게시글 중복 신고 방지 (DB UniqueConstraint + 서비스 레벨 409 처리)
+- 신고 후 버튼이 "신고됨" 상태로 변경 (비활성화)
+- 관리자 패널에서 신고 목록 조회, 게시글 본문 미리보기(최대 500자), 해결 처리
 
 ### 관리자 패널 (`/admin`)
 - 사이트 통계 (전체 회원 · 게시글 · 댓글 · 관리자 수)
@@ -70,15 +107,17 @@ FastAPI + PostgreSQL + React(Vite)로 구축된 풀스택 커뮤니티 플랫폼
 - 관리자 권한 부여 / 해제 (슈퍼 관리자 전용)
 - 게시글 / 댓글 강제 삭제
 - 공지사항 등록 / 해제
-- **베스트 게시글 최소 좋아요 수** 설정
+- 베스트 게시글 최소 좋아요 수 설정
 - 이모티콘 관리 (등록 · 삭제 · 활성화 토글)
+- 카테고리 관리 (생성 · 수정 · 삭제)
+- 신고 목록 조회, 게시글 본문 확인, 신고 해결 처리
 
 ### 권한 체계
 
 | 등급 | 설명 |
 |------|------|
-| 일반 유저 | 게시글 · 댓글 CRUD, 좋아요 |
-| 관리자 (`is_admin`) | + 공지 등록/해제, 게시글/댓글 강제 삭제, 회원 정지, 베스트 설정 변경, 이모티콘 관리 |
+| 일반 유저 | 게시글 · 댓글 CRUD, 좋아요, 신고, 위키 편집, 아레나 참여 |
+| 관리자 (`is_admin`) | + 공지 등록/해제, 게시글/댓글 강제 삭제, 회원 정지, 베스트 설정 변경, 이모티콘 관리, 카테고리 관리, 신고 처리, 아레나 삭제, 위키 삭제 |
 | 슈퍼 관리자 (`is_super_admin`) | + 관리자 권한 부여/해제 |
 
 ---
@@ -172,26 +211,29 @@ SUPER_ADMIN_NICKNAME=관리자
 
 ```
 community_app/
-├── run.sh                        # 전체 background 실행
-├── stop.sh                       # 전체 종료
+├── run.sh                          # 전체 background 실행
+├── stop.sh                         # 전체 종료
 ├── backend/
 │   ├── app/
-│   │   ├── main.py               # FastAPI 앱 진입점 · 자동 마이그레이션
-│   │   ├── dependencies.py       # JWT 인증 의존성
+│   │   ├── main.py                 # FastAPI 앱 진입점 · 자동 마이그레이션
+│   │   ├── dependencies.py         # JWT 인증 의존성
 │   │   ├── routers/
-│   │   │   ├── users.py          # 회원 API
-│   │   │   ├── posts.py          # 게시글 API
-│   │   │   ├── comments.py       # 댓글 API
-│   │   │   ├── likes.py          # 좋아요 API
-│   │   │   ├── categories.py     # 카테고리 API
-│   │   │   ├── admin.py          # 관리자 API
-│   │   │   ├── upload.py         # 이미지 업로드 API
-│   │   │   ├── emoticons.py      # 이모티콘 API
-│   │   │   └── notifications.py  # 알림 API
+│   │   │   ├── users.py            # 회원 API
+│   │   │   ├── posts.py            # 게시글 API
+│   │   │   ├── comments.py         # 댓글 API
+│   │   │   ├── likes.py            # 좋아요 API
+│   │   │   ├── categories.py       # 카테고리 API
+│   │   │   ├── admin.py            # 관리자 API
+│   │   │   ├── upload.py           # 이미지 업로드 API
+│   │   │   ├── emoticons.py        # 이모티콘 API
+│   │   │   ├── notifications.py    # 알림 API
+│   │   │   ├── reports.py          # 신고 API
+│   │   │   ├── wiki.py             # 위키 API
+│   │   │   └── arena.py            # 아레나 API + WebSocket
 │   │   ├── core/
-│   │   │   ├── config.py         # 환경 변수 설정
-│   │   │   ├── security.py       # 비밀번호 해싱 · JWT
-│   │   │   └── logging.py        # 로깅 설정
+│   │   │   ├── config.py           # 환경 변수 설정
+│   │   │   ├── security.py         # 비밀번호 해싱 · JWT
+│   │   │   └── logging.py          # 로깅 설정
 │   │   ├── models/
 │   │   │   ├── user.py
 │   │   │   ├── category.py
@@ -199,62 +241,80 @@ community_app/
 │   │   │   ├── comment.py
 │   │   │   ├── like.py
 │   │   │   ├── emoticon.py
-│   │   │   ├── notification.py   # 알림 모델
-│   │   │   └── settings.py       # 사이트 설정 (key-value)
+│   │   │   ├── notification.py
+│   │   │   ├── settings.py         # 사이트 설정 (key-value)
+│   │   │   ├── report.py           # 신고 모델 (UniqueConstraint 포함)
+│   │   │   ├── wiki.py             # WikiDocument, WikiRevision
+│   │   │   └── arena.py            # Arena, ArenaMessage, ArenaVote
 │   │   ├── schemas/
 │   │   │   ├── user.py
-│   │   │   ├── post.py
-│   │   │   ├── comment.py        # MyCommentItem, PaginatedMyComments 포함
+│   │   │   ├── post.py             # is_liked, is_reported 포함
+│   │   │   ├── comment.py          # MyCommentItem, PaginatedMyComments 포함
 │   │   │   ├── category.py
 │   │   │   ├── admin.py
 │   │   │   ├── emoticon.py
-│   │   │   └── notification.py
+│   │   │   ├── notification.py
+│   │   │   ├── report.py           # post_content 미리보기 포함
+│   │   │   ├── wiki.py
+│   │   │   └── arena.py
 │   │   ├── services/
-│   │   │   ├── user_service.py   # get_my_comments 포함
-│   │   │   ├── post_service.py
+│   │   │   ├── user_service.py
+│   │   │   ├── post_service.py     # is_reported 조회 포함
 │   │   │   ├── comment_service.py
 │   │   │   ├── like_service.py
 │   │   │   ├── category_service.py
 │   │   │   ├── admin_service.py
 │   │   │   ├── emoticon_service.py
-│   │   │   └── notification_service.py
+│   │   │   ├── notification_service.py
+│   │   │   ├── report_service.py   # 중복 신고 방지 포함
+│   │   │   ├── wiki_service.py
+│   │   │   └── arena_service.py    # 자동 종료 · 투표 · 삭제 포함
 │   │   └── db/
-│   │       └── database.py       # DB 연결 · 세션
+│   │       └── database.py         # DB 연결 · 세션
 │   ├── storage/
-│   │   ├── server.log            # 서버 로그 (uvicorn + 앱 통합)
-│   │   └── uploads/              # 업로드 이미지 저장소
-│   │       └── emoticons/        # 이모티콘 이미지
+│   │   ├── server.log              # 서버 로그 (uvicorn + 앱 통합)
+│   │   └── uploads/                # 업로드 이미지 저장소
+│   │       └── emoticons/          # 이모티콘 이미지
 │   └── run.sh
 └── frontend/
     ├── src/
     │   ├── api/
     │   │   ├── client.js
     │   │   ├── posts.js
-    │   │   ├── auth.js            # getMyComments 포함
+    │   │   ├── auth.js             # getMyComments 포함
     │   │   ├── admin.js
     │   │   ├── emoticons.js
-    │   │   └── notifications.js   # 알림 API
+    │   │   ├── notifications.js
+    │   │   ├── reports.js
+    │   │   ├── wiki.js
+    │   │   └── arena.js            # deleteArena 포함
     │   ├── components/
-    │   │   ├── board/             # PostCard, NoticeBar
-    │   │   ├── comment/           # CommentItem
-    │   │   ├── emoticon/          # EmoticonPicker
-    │   │   ├── layout/            # Layout, Header, Sidebar
-    │   │   │   └── NotificationBell.jsx  # 알림 벨 컴포넌트
-    │   │   └── post/              # ContentRenderer
+    │   │   ├── board/              # PostCard, NoticeBar
+    │   │   ├── comment/            # CommentItem
+    │   │   ├── emoticon/           # EmoticonPicker
+    │   │   ├── layout/             # Layout, Header, Sidebar, NotificationBell
+    │   │   ├── post/               # ContentRenderer
+    │   │   └── report/             # ReportModal
     │   ├── contexts/
     │   │   └── AuthContext.jsx
     │   ├── pages/
     │   │   ├── HomePage.jsx
     │   │   ├── BoardPage.jsx
-    │   │   ├── PostDetailPage.jsx
-    │   │   ├── WritePostPage.jsx
-    │   │   ├── ProfilePage.jsx    # 내가 쓴 글 · 내가 쓴 댓글 · 설정
-    │   │   ├── AdminPage.jsx
+    │   │   ├── PostDetailPage.jsx  # 신고 버튼 · 신고됨 상태 포함
+    │   │   ├── WritePostPage.jsx   # 이미지 파일/드래그/붙여넣기, 영상 URL, 이모티콘
+    │   │   ├── ProfilePage.jsx     # 내가 쓴 글 · 내가 쓴 댓글 · 설정
+    │   │   ├── AdminPage.jsx       # 신고 본문 미리보기 포함
+    │   │   ├── WikiListPage.jsx
+    │   │   ├── WikiDetailPage.jsx
+    │   │   ├── WikiEditPage.jsx
+    │   │   ├── WikiHistoryPage.jsx
+    │   │   ├── ArenaListPage.jsx   # 관리자 삭제 버튼 포함
+    │   │   ├── ArenaDetailPage.jsx # 실시간 배틀 · 투표 · 무승부 표시
     │   │   ├── LoginPage.jsx
     │   │   └── RegisterPage.jsx
     │   └── App.jsx
     ├── storage/
-    │   └── server.log             # Vite 개발 서버 로그
+    │   └── server.log              # Vite 개발 서버 로그
     └── run.sh
 ```
 
@@ -270,10 +330,18 @@ community_app/
 | `comments` | id, content, user_id, post_id, parent_id, is_deleted |
 | `likes` | id, user_id, post_id (nullable), comment_id (nullable) |
 | `emoticons` | id, name, image_url, is_active |
-| `notifications` | id, user_id, actor_id, type, post_id, comment_id, is_read |
+| `notifications` | id, user_id, actor_id, type, post_id, comment_id, arena_id, is_read |
 | `site_settings` | key (PK), value — 사이트 설정 저장 (예: `best_post_min_likes`) |
+| `reports` | id, post_id, reporter_id, reason, is_resolved — UNIQUE(post_id, reporter_id) |
+| `wiki_documents` | id, title, created_by_id, view_count, is_deleted |
+| `wiki_revisions` | id, wiki_id, editor_id, sections (JSON), comment, created_at |
+| `arenas` | id, creator_id, opponent_id, duration_minutes, status, started_at, ends_at |
+| `arena_messages` | id, arena_id, user_id, content, created_at |
+| `arena_votes` | id, arena_id, voter_id, voted_for_id — UNIQUE(arena_id, voter_id) |
 
 > `site_settings` 기본값: `best_post_min_likes = 10`
+
+> 아레나 상태 흐름: `pending` → `active` → `finished` / `pending` → `declined`
 
 ---
 
@@ -308,7 +376,7 @@ community_app/
 | POST | `` | ✅ | 게시글 작성 |
 | GET | `/notices` | — | 공지사항 목록 (최대 10개) |
 | GET | `/best` | — | 베스트 게시글 목록 |
-| GET | `/{post_id}` | 선택 | 게시글 상세 (조회수 증가) |
+| GET | `/{post_id}` | 선택 | 게시글 상세 (조회수 증가, is_liked · is_reported 포함) |
 | PUT | `/{post_id}` | ✅ 작성자 | 게시글 수정 |
 | DELETE | `/{post_id}` | ✅ 작성자 | 게시글 삭제 |
 
@@ -355,7 +423,44 @@ community_app/
 | POST | `/{notification_id}/read` | ✅ | 단건 읽음 처리 |
 | POST | `/read-all` | ✅ | 전체 읽음 처리 |
 
-알림 타입: `comment_on_post` (내 게시글에 댓글), `reply_on_comment` (내 댓글에 대댓글)
+알림 타입: `comment_on_post` (내 게시글에 댓글), `reply_on_comment` (내 댓글에 대댓글), `arena_invite` (아레나 초대)
+
+### 신고 (`/api/reports`)
+
+| Method | 경로 | 인증 | 설명 |
+|--------|------|:----:|------|
+| POST | `` | ✅ | 게시글 신고 (사용자당 동일 게시글 1회, 중복 시 409) |
+
+### 위키 (`/api/wiki`)
+
+| Method | 경로 | 인증 | 설명 |
+|--------|------|:----:|------|
+| GET | `` | — | 위키 문서 목록 (검색 · 페이지네이션) |
+| POST | `` | ✅ | 위키 문서 생성 |
+| GET | `/{wiki_id}` | — | 위키 문서 단건 조회 (조회수 증가) |
+| PUT | `/{wiki_id}` | ✅ | 위키 문서 수정 (새 리비전 생성) |
+| GET | `/{wiki_id}/revisions` | — | 리비전 목록 |
+| GET | `/{wiki_id}/revisions/{revision_id}` | — | 특정 리비전 조회 |
+| DELETE | `/{wiki_id}` | ✅ 관리자 | 위키 문서 삭제 |
+
+### 아레나 (`/api/arenas`)
+
+| Method | 경로 | 인증 | 설명 |
+|--------|------|:----:|------|
+| GET | `` | 선택 | 아레나 목록 (상태 필터 · 페이지네이션) |
+| POST | `` | ✅ | 아레나 생성 (상대방에게 초대 알림) |
+| GET | `/{arena_id}` | 선택 | 아레나 단건 조회 |
+| DELETE | `/{arena_id}` | ✅ 관리자 | 아레나 삭제 |
+| POST | `/{arena_id}/accept` | ✅ | 아레나 수락 |
+| POST | `/{arena_id}/decline` | ✅ | 아레나 거절 |
+| GET | `/{arena_id}/messages` | — | 채팅 메시지 목록 |
+| POST | `/{arena_id}/messages` | ✅ | 채팅 메시지 전송 (참가자 전용) |
+| POST | `/{arena_id}/vote` | ✅ | 투표 (관전자 전용, 변경 가능) |
+| GET | `/{arena_id}/votes` | 선택 | 투표 현황 조회 |
+| GET | `/users/search` | ✅ | 아레나 상대방 유저 검색 |
+| WS | `/{arena_id}/ws` | — | WebSocket 실시간 연결 |
+
+WebSocket 이벤트 타입: `arena_started`, `arena_ended`, `message`, `vote_update`, `spectator_count`
 
 ### 관리자 (`/api/admin`) — 관리자 인증 필요
 
@@ -370,6 +475,12 @@ community_app/
 | DELETE | `/comments/{comment_id}` | 관리자 | 댓글 강제 삭제 |
 | GET | `/settings/best-post-threshold` | 관리자 | 베스트 게시글 기준 조회 |
 | PATCH | `/settings/best-post-threshold` | 관리자 | 베스트 게시글 기준 변경 |
+| GET | `/categories` | 관리자 | 전체 카테고리 목록 (비활성 포함) |
+| POST | `/categories` | 관리자 | 카테고리 생성 |
+| PATCH | `/categories/{cat_id}` | 관리자 | 카테고리 수정 |
+| DELETE | `/categories/{cat_id}` | 관리자 | 카테고리 삭제 |
+| GET | `/reports` | 관리자 | 신고 목록 (게시글 본문 미리보기 포함) |
+| PATCH | `/reports/{post_id}/resolve` | 관리자 | 신고 해결 처리 |
 
 ---
 
@@ -377,7 +488,7 @@ community_app/
 
 | 경로 | 페이지 | 인증 |
 |------|--------|:----:|
-| `/` | 홈 (최신글 · 공지 요약) | — |
+| `/` | 홈 (최신글 · 카테고리 요약) | — |
 | `/board` | 전체 게시글 | — |
 | `/board/:categorySlug` | 카테고리별 게시글 | — |
 | `/board/best` | 베스트 게시글 | — |
@@ -386,6 +497,13 @@ community_app/
 | `/posts/:postId/edit` | 글 수정 | ✅ 작성자 |
 | `/profile` | 프로필 관리 (내 글 · 내 댓글 · 설정) | ✅ |
 | `/admin` | 관리자 패널 | ✅ 관리자 |
+| `/wiki` | 위키 문서 목록 | — |
+| `/wiki/new` | 위키 문서 작성 | ✅ |
+| `/wiki/:wikiId` | 위키 문서 상세 | — |
+| `/wiki/:wikiId/edit` | 위키 문서 편집 | ✅ |
+| `/wiki/:wikiId/history` | 위키 리비전 히스토리 | — |
+| `/arena` | 아레나 목록 | — |
+| `/arena/:arenaId` | 아레나 상세 (실시간 배틀) | — |
 | `/login` | 로그인 | — |
 | `/register` | 회원가입 | — |
 

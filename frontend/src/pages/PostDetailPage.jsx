@@ -22,6 +22,7 @@ export default function PostDetailPage() {
   const [newComment, setNewComment] = useState('')
   const [liked, setLiked] = useState(false)
   const [likeCount, setLikeCount] = useState(0)
+  const [reported, setReported] = useState(false)
   const [showCommentEmoticon, setShowCommentEmoticon] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
 
@@ -32,6 +33,7 @@ export default function PostDetailPage() {
       onSuccess: (data) => {
         setLiked(data.is_liked)
         setLikeCount(data.like_count)
+        setReported(data.is_reported ?? false)
       },
     }
   )
@@ -203,14 +205,21 @@ export default function PostDetailPage() {
             {liked ? '좋아요 취소' : '좋아요'}
           </button>
           {user && user.id !== post.user_id && (
-            <button
-              className="report-post-btn"
-              onClick={() => setShowReportModal(true)}
-              title="게시글 신고"
-            >
-              <Flag size={18} />
-              신고
-            </button>
+            reported ? (
+              <button className="report-post-btn reported" disabled title="이미 신고한 게시글입니다">
+                <Flag size={18} />
+                신고됨
+              </button>
+            ) : (
+              <button
+                className="report-post-btn"
+                onClick={() => setShowReportModal(true)}
+                title="게시글 신고"
+              >
+                <Flag size={18} />
+                신고
+              </button>
+            )
           )}
         </div>
       </article>
@@ -219,6 +228,7 @@ export default function PostDetailPage() {
         <ReportModal
           postId={parseInt(postId)}
           onClose={() => setShowReportModal(false)}
+          onSuccess={() => { setReported(true); setShowReportModal(false) }}
         />
       )}
 

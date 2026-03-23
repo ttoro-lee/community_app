@@ -38,6 +38,7 @@ class PostResponse(BaseModel):
     like_count: int = 0
     comment_count: int = 0
     is_liked: bool = False
+    is_reported: bool = False
 
     class Config:
         from_attributes = True

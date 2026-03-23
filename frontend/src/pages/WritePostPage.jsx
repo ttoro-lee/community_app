@@ -101,6 +101,31 @@ export default function WritePostPage() {
     }
   }
 
+  // 클립보드 붙여넣기 이미지 업로드
+  const handlePaste = async (e) => {
+    const items = Array.from(e.clipboardData?.items || [])
+    const imageItems = items.filter((item) => item.type.startsWith('image/'))
+    if (imageItems.length === 0) return
+
+    e.preventDefault()
+    setUploading(true)
+    try {
+      for (const item of imageItems) {
+        const file = item.getAsFile()
+        if (file) await uploadImageFile(file)
+      }
+      toast.success(
+        imageItems.length > 1
+          ? `${imageItems.length}개 이미지가 삽입되었습니다.`
+          : '이미지가 삽입되었습니다.'
+      )
+    } catch (err) {
+      toast.error(err.response?.data?.detail || '이미지 업로드에 실패했습니다.')
+    } finally {
+      setUploading(false)
+    }
+  }
+
   // 드래그 앤 드롭 이미지 업로드
   const handleDragOver = (e) => {
     e.preventDefault()
@@ -315,9 +340,10 @@ export default function WritePostPage() {
               <textarea
                 ref={textareaRef}
                 className="form-input content-textarea"
-                placeholder="내용을 입력하세요..."
+                placeholder="내용을 입력하세요... (이미지 Ctrl+V로 붙여넣기 가능)"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
+                onPaste={handlePaste}
                 rows={16}
               />
               {isDragging && (
