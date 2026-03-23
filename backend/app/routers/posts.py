@@ -54,7 +54,7 @@ def get_post(
 ):
     """게시글 상세 조회"""
     user_id = current_user.id if current_user else None
-    post, like_count, comment_count, is_liked = post_service.get_post_by_id(db, post_id, user_id)
+    post, like_count, comment_count, is_liked, is_reported = post_service.get_post_by_id(db, post_id, user_id)
     return {
         "id": post.id,
         "title": post.title,
@@ -72,6 +72,7 @@ def get_post(
         "like_count": like_count,
         "comment_count": comment_count,
         "is_liked": is_liked,
+        "is_reported": is_reported,
     }
 
 

@@ -329,6 +329,18 @@
 }
 .arena-login-hint a { color: var(--primary); }
 
+.arena-vote-closed-hint {
+  width: 100%;
+  text-align: center;
+  padding: 8px 10px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #b91c1c;
+}
+
 /* 채팅 열 */
 .arena-chat-col {
   flex: 1;

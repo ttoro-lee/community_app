@@ -5,6 +5,7 @@ from app.models.post import Post
 from app.models.like import Like
 from app.models.comment import Comment
 from app.models.category import Category
+from app.models.report import Report
 from app.schemas.post import PostCreate, PostUpdate
 from typing import Optional
 import math
@@ -82,14 +83,20 @@ def get_post_by_id(db: Session, post_id: int, current_user_id: Optional[int] = N
         Comment.post_id == post_id, Comment.is_deleted == False
     ).scalar()
     is_liked = False
+    is_reported = False
     if current_user_id:
         is_liked = (
             db.query(Like)
             .filter(Like.post_id == post_id, Like.user_id == current_user_id)
             .first()
         ) is not None
+        is_reported = (
+            db.query(Report)
+            .filter(Report.post_id == post_id, Report.reporter_id == current_user_id)
+            .first()
+        ) is not None
 
-    return post, like_count, comment_count, is_liked
+    return post, like_count, comment_count, is_liked, is_reported
 
 
 def create_post(db: Session, post_data: PostCreate, user_id: int, is_admin: bool = False) -> Post:

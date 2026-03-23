@@ -24,6 +24,14 @@ def create_report(db: Session, data: ReportCreate, reporter_id: int) -> Report:
     if post.user_id == reporter_id:
         raise HTTPException(status_code=400, detail="본인의 게시글은 신고할 수 없습니다.")
 
+    # 중복 신고 방지
+    existing = db.query(Report).filter(
+        Report.post_id == data.post_id,
+        Report.reporter_id == reporter_id,
+    ).first()
+    if existing:
+        raise HTTPException(status_code=409, detail="이미 신고한 게시글입니다.")
+
     report = Report(
         post_id=data.post_id,
         reporter_id=reporter_id,
@@ -108,6 +116,7 @@ def get_reported_posts(
             ReportedPostItem(
                 post_id=post.id,
                 post_title=post.title,
+                post_content=post.content,
                 post_is_deleted=post.is_deleted,
                 author_nickname=author_nickname,
                 report_count=report_count,

@@ -304,7 +304,7 @@ export default function ArenaDetailPage() {
   const isActive = current.status === 'active'
   const isPending = current.status === 'pending'
   const canChat = isParticipant && isActive
-  const canVote = user && !isParticipant && (isActive || isFinished)
+  const canVote = user && !isParticipant && isActive
 
   // 승패 판정
   const { creator_votes, opponent_votes, my_vote } = voteCounts
@@ -420,9 +420,14 @@ export default function ArenaDetailPage() {
             side="opponent"
           />
 
-          {/* 비겼을 때 */}
-          {isFinished && creator_votes === opponent_votes && totalVotes > 0 && (
+          {/* 비겼을 때 (0:0 포함) */}
+          {isFinished && creator_votes === opponent_votes && (
             <div className="arena-draw-badge">🤝 무승부</div>
+          )}
+
+          {/* 종료 후 투표 마감 안내 */}
+          {isFinished && !isParticipant && user && (
+            <p className="arena-vote-closed-hint">⛔ 아레나가 종료되어 투표가 마감되었습니다</p>
           )}
 
           {!user && isActive && (

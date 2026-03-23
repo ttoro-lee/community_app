@@ -43,6 +43,7 @@ class PostInfo(BaseModel):
 class ReportedPostItem(BaseModel):
     post_id: int
     post_title: str
+    post_content: Optional[str] = None
     post_is_deleted: bool
     author_nickname: Optional[str] = None
     report_count: int
