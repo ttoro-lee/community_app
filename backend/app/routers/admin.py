@@ -26,7 +26,7 @@ from pydantic import BaseModel
 
 
 class NoticeToggleRequest(BaseModel):
-    register: bool   # True=공지 등록, False=공지 해제
+    is_notice: bool   # True=공지 등록, False=공지 해제
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
 
@@ -104,7 +104,7 @@ def toggle_notice(
     db: Session = Depends(get_db),
     admin: User = Depends(_require_admin),
 ):
-    post = admin_service.toggle_notice(db, post_id, body.register, admin)
+    post = admin_service.toggle_notice(db, post_id, body.is_notice, admin)
     return post
 
 

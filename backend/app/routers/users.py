@@ -1,7 +1,9 @@
+import secrets
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from app.db.database import get_db
-from app.schemas.user import UserCreate, UserResponse, UserUpdate, Token, LoginRequest, PasswordChange, DeleteAccount
+from app.schemas.user import UserCreate, UserResponse, UserUpdate, Token, LoginRequest, PasswordChange, DeleteAccount, ApiKeyResponse
 from app.schemas.post import PaginatedPosts
 from app.schemas.comment import PaginatedMyComments
 from app.services import user_service
@@ -15,6 +17,16 @@ router = APIRouter(prefix="/users", tags=["Users"])
 def register(user_data: UserCreate, db: Session = Depends(get_db)):
     """회원가입"""
     return user_service.create_user(db, user_data)
+
+
+@router.get("/check-username")
+def check_username(
+    username: str = Query(..., min_length=3, max_length=50),
+    db: Session = Depends(get_db),
+):
+    """아이디 중복 확인"""
+    user = user_service.get_user_by_username(db, username)
+    return {"available": user is None}
 
 
 @router.post("/login", response_model=Token)
@@ -85,6 +97,27 @@ def get_my_comments(
 ):
     """내가 작성한 댓글 목록"""
     return user_service.get_my_comments(db, current_user.id, page, size)
+
+
+@router.post("/me/api-key", response_model=ApiKeyResponse)
+def generate_api_key(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """API 키 발급 / 재발급"""
+    new_key = secrets.token_hex(32)
+    current_user.api_key = new_key
+    db.commit()
+    return ApiKeyResponse(api_key=new_key)
+
+
+@router.get("/me/api-key", response_model=ApiKeyResponse)
+def get_api_key(current_user: User = Depends(get_current_user)):
+    """현재 API 키 조회"""
+    from fastapi import HTTPException
+    if not current_user.api_key:
+        raise HTTPException(status_code=404, detail="발급된 API 키가 없습니다.")
+    return ApiKeyResponse(api_key=current_user.api_key)
 
 
 @router.get("/{user_id}", response_model=UserResponse)

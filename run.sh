@@ -34,7 +34,7 @@ if [ ! -f "$BACKEND_PID_FILE" ]; then
   cd "$BACKEND_DIR"
   uv sync --quiet
   nohup uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload \
-    > "$BACKEND_LOG" 2>&1 &
+    >> "$BACKEND_LOG" 2>&1 &
   BACKEND_PID=$!
   echo $BACKEND_PID > "$BACKEND_PID_FILE"
   echo "   ✅ 백엔드 실행됨 (PID: $BACKEND_PID)"
@@ -63,7 +63,7 @@ if [ ! -f "$FRONTEND_PID_FILE" ]; then
   cd "$FRONTEND_DIR"
   npm install --silent
   nohup npm run dev \
-    > "$FRONTEND_LOG" 2>&1 &
+    >> "$FRONTEND_LOG" 2>&1 &
   FRONTEND_PID=$!
   echo $FRONTEND_PID > "$FRONTEND_PID_FILE"
   echo "   ✅ 프론트엔드 실행됨 (PID: $FRONTEND_PID)"

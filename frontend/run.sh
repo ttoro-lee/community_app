@@ -36,7 +36,7 @@ echo ""
 
 # background로 실행 (nohup + 로그 저장)
 nohup npm run dev \
-  > "$LOG_FILE" 2>&1 &
+  >> "$LOG_FILE" 2>&1 &
 
 FRONTEND_PID=$!
 echo $FRONTEND_PID > "$PID_FILE"

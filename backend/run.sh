@@ -38,7 +38,7 @@ echo ""
 
 # background로 실행 (nohup + 로그 저장)
 nohup uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload \
-  > "$LOG_FILE" 2>&1 &
+  >> "$LOG_FILE" 2>&1 &
 
 BACKEND_PID=$!
 echo $BACKEND_PID > "$PID_FILE"

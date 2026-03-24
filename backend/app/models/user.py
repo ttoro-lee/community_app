@@ -19,6 +19,7 @@ class User(Base):
     is_super_admin = Column(Boolean, default=False)   # 최초 슈퍼 계정 여부
     suspended_until = Column(DateTime(timezone=True), nullable=True)   # 활동 정지 해제 시각
     suspend_reason = Column(String(255), nullable=True)
+    api_key = Column(String(64), unique=True, nullable=True, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
