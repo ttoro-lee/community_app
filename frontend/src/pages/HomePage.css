@@ -148,10 +148,183 @@
   100% { background-position: -200% 0; }
 }
 
+/* 2-column main layout */
+.home-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+.home-col-left { min-width: 0; }
+
+.home-col-right {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+/* Photo grid: 3-column inside right column */
+.media-grid-photos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+/* Video grid: 2-column inside right column */
+.media-grid-videos {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+/* Photo Cards */
+.photo-card {
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+  overflow: hidden;
+  position: relative;
+  text-decoration: none;
+  display: block;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.photo-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+
+.photo-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.photo-card-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 6px 8px 8px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.65));
+}
+
+.photo-card-title {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Video Cards */
+.video-card {
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  position: relative;
+  min-width: 0;
+}
+
+.video-card-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius);
+  display: block;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.video-card:hover .video-card-thumb { transform: translateY(-2px); box-shadow: var(--shadow); }
+
+.video-card-placeholder {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.video-card:hover .video-card-placeholder { transform: translateY(-2px); box-shadow: var(--shadow); }
+
+.video-card-platform-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(0,0,0,0.65);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 100px;
+}
+
+.video-card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+}
+
+/* Skeleton for media cards */
+.skeleton-photo-card {
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, var(--secondary) 25%, var(--border) 50%, var(--secondary) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeleton-video-card {
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius);
+  background: linear-gradient(90deg, var(--secondary) 25%, var(--border) 50%, var(--secondary) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.empty-state-sm {
+  padding: 20px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  background: var(--secondary);
+  border-radius: var(--radius);
+}
+
+@media (max-width: 900px) {
+  .home-main-grid {
+    grid-template-columns: 1fr;
+  }
+  .home-col-right {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
 @media (max-width: 640px) {
   .hero-banner { padding: 28px 20px; min-height: 140px; }
   .hero-title { font-size: clamp(18px, 5vw, 24px); }
   .hero-decoration { display: none; }
-  /* 모바일: 최소 2열 유지 */
   .category-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+  .home-col-right { grid-template-columns: 1fr; }
+  .media-grid-photos { grid-template-columns: repeat(3, 1fr); }
+  .media-grid-videos { grid-template-columns: repeat(2, 1fr); }
 }

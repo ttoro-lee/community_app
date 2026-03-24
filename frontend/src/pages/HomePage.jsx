@@ -4,15 +4,33 @@ import { getPosts, getCategories } from '../api/posts'
 import { getMyPosts } from '../api/auth'
 import { useAuth } from '../contexts/AuthContext'
 import PostCard from '../components/board/PostCard'
-import { TrendingUp, ArrowRight } from 'lucide-react'
+import { TrendingUp, ArrowRight, ImageIcon, Video } from 'lucide-react'
 import './HomePage.css'
+
+function getFirstImageUrl(content) {
+  const match = content.match(/\[image:([^\]]+)\]/)
+  return match ? match[1] : null
+}
+
+function getFirstVideoInfo(content) {
+  const lines = content.split('\n')
+  for (const line of lines) {
+    const trimmed = line.trim()
+    const ytMatch = trimmed.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/)
+    if (ytMatch) return { platform: 'YouTube', thumbnailUrl: `https://img.youtube.com/vi/${ytMatch[1]}/mqdefault.jpg` }
+    if (/chzzk\.naver\.com\/clips\//.test(trimmed)) return { platform: 'Chzzk 클립', thumbnailUrl: null }
+    if (/chzzk\.naver\.com\/live\//.test(trimmed)) return { platform: 'Chzzk 라이브', thumbnailUrl: null }
+    if (/chzzk\.naver\.com\/video\//.test(trimmed)) return { platform: 'Chzzk VOD', thumbnailUrl: null }
+  }
+  return null
+}
 
 export default function HomePage() {
   const { user } = useAuth()
 
   const { data: postsData, isLoading: postsLoading } = useQuery(
     'home-posts',
-    () => getPosts({ page: 1, size: 8 }).then((r) => r.data)
+    () => getPosts({ page: 1, size: 30 }).then((r) => r.data)
   )
 
   const { data: categories = [] } = useQuery('categories', () =>
@@ -26,6 +44,19 @@ export default function HomePage() {
   )
 
   const hasWritten = !!user && myPostsData?.total > 0
+
+  const allPosts = postsData?.items ?? []
+  const recentPosts = allPosts.slice(0, 8)
+
+  const imagePosts = allPosts
+    .map((p) => ({ post: p, imgUrl: getFirstImageUrl(p.content) }))
+    .filter((x) => x.imgUrl)
+    .slice(0, 12)
+
+  const videoPosts = allPosts
+    .map((p) => ({ post: p, videoInfo: getFirstVideoInfo(p.content) }))
+    .filter((x) => x.videoInfo)
+    .slice(0, 12)
 
   return (
     <div className="home-page fade-in">
@@ -64,35 +95,110 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Recent Posts */}
-      <section className="home-section">
-        <div className="section-header">
-          <h2 className="section-title">
-            <TrendingUp size={18} style={{ color: 'var(--primary)' }} />
-            최신 게시글
-          </h2>
-          <Link to="/board" className="see-all">더 보기 <ArrowRight size={14} /></Link>
-        </div>
+      {/* Main Content: 2-column layout */}
+      <div className="home-main-grid">
 
-        {postsLoading ? (
-          <div className="loading-list">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="skeleton-card" />
-            ))}
+        {/* Left: Recent Posts */}
+        <section className="home-section home-col-left">
+          <div className="section-header">
+            <h2 className="section-title">
+              <TrendingUp size={18} style={{ color: 'var(--primary)' }} />
+              최신 게시글
+            </h2>
+            <Link to="/board" className="see-all">더 보기 <ArrowRight size={14} /></Link>
           </div>
-        ) : (
-          <div className="posts-list">
-            {postsData?.items?.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-            {!postsData?.items?.length && (
-              <div className="empty-state">
-                <p>아직 게시글이 없습니다. 첫 글을 작성해보세요!</p>
+
+          {postsLoading ? (
+            <div className="loading-list">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="skeleton-card" />
+              ))}
+            </div>
+          ) : (
+            <div className="posts-list">
+              {recentPosts.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))}
+              {!recentPosts.length && (
+                <div className="empty-state">
+                  <p>아직 게시글이 없습니다. 첫 글을 작성해보세요!</p>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
+
+        {/* Right: Photos + Videos stacked */}
+        <div className="home-col-right">
+
+          {/* Photo Posts */}
+          <section className="home-section">
+            <div className="section-header">
+              <h2 className="section-title">
+                <ImageIcon size={16} style={{ color: '#10b981' }} />
+                사진
+              </h2>
+            </div>
+            {postsLoading ? (
+              <div className="media-grid-photos">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="skeleton-photo-card" />
+                ))}
               </div>
+            ) : imagePosts.length > 0 ? (
+              <div className="media-grid-photos">
+                {imagePosts.slice(0, 6).map(({ post, imgUrl }) => (
+                  <Link key={post.id} to={`/posts/${post.id}`} className="photo-card">
+                    <img src={imgUrl} alt={post.title} className="photo-card-img" loading="lazy" />
+                    <div className="photo-card-overlay">
+                      <span className="photo-card-title">{post.title}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-state-sm"><p>사진 게시글이 없습니다</p></div>
             )}
-          </div>
-        )}
-      </section>
+          </section>
+
+          {/* Video Posts */}
+          <section className="home-section">
+            <div className="section-header">
+              <h2 className="section-title">
+                <Video size={16} style={{ color: '#f59e0b' }} />
+                동영상
+              </h2>
+            </div>
+            {postsLoading ? (
+              <div className="media-grid-videos">
+                {[...Array(2)].map((_, i) => (
+                  <div key={i} className="skeleton-video-card" />
+                ))}
+              </div>
+            ) : videoPosts.length > 0 ? (
+              <div className="media-grid-videos">
+                {videoPosts.slice(0, 4).map(({ post, videoInfo }) => (
+                  <Link key={post.id} to={`/posts/${post.id}`} className="video-card">
+                    {videoInfo.thumbnailUrl ? (
+                      <img src={videoInfo.thumbnailUrl} alt={post.title} className="video-card-thumb" loading="lazy" />
+                    ) : (
+                      <div className="video-card-placeholder">
+                        <Video size={24} />
+                        <span>{videoInfo.platform}</span>
+                      </div>
+                    )}
+                    <div className="video-card-platform-badge">{videoInfo.platform}</div>
+                    <p className="video-card-title">{post.title}</p>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="empty-state-sm"><p>동영상 게시글이 없습니다</p></div>
+            )}
+          </section>
+
+        </div>
+      </div>
     </div>
   )
 }
