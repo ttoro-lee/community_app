@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { updateMe, changePassword, deleteAccount, getMyPosts, getMyComments } from '../api/auth'
+import { updateMe, changePassword, deleteAccount, getMyPosts, getMyComments, getApiKey, generateApiKey } from '../api/auth'
 import {
   User, Save, Lock, Trash2, FileText, ChevronLeft, ChevronRight,
-  MessageSquare, Eye, Heart, Calendar, Reply,
+  MessageSquare, Eye, EyeOff, Heart, Calendar, Reply, Key, Copy, RefreshCw,
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
@@ -16,6 +16,7 @@ const TABS = [
   { id: 'comments', label: '내가 쓴 댓글',  icon: MessageSquare },
   { id: 'profile',  label: '프로필 수정',   icon: User },
   { id: 'password', label: '비밀번호 변경', icon: Lock },
+  { id: 'apikey',   label: 'API 키',        icon: Key },
   { id: 'delete',   label: '계정 탈퇴',     icon: Trash2 },
 ]
 
@@ -74,6 +75,7 @@ export default function ProfilePage() {
         {activeTab === 'comments' && <MyCommentsTab />}
         {activeTab === 'profile'  && <ProfileEditTab user={user} setUser={setUser} />}
         {activeTab === 'password' && <PasswordTab />}
+        {activeTab === 'apikey'   && <ApiKeyTab />}
         {activeTab === 'delete'   && <DeleteTab logout={logout} navigate={navigate} />}
       </div>
     </div>
@@ -395,6 +397,107 @@ function PasswordTab() {
           </button>
         </div>
       </form>
+    </div>
+  )
+}
+
+/* ── API 키 ──────────────────────────────────────── */
+function ApiKeyTab() {
+  const [apiKey, setApiKey] = useState(null)
+  const [visible, setVisible] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [generating, setGenerating] = useState(false)
+
+  useEffect(() => {
+    getApiKey()
+      .then((res) => setApiKey(res.data.api_key))
+      .catch(() => setApiKey(null))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleGenerate = async () => {
+    setGenerating(true)
+    try {
+      const res = await generateApiKey()
+      setApiKey(res.data.api_key)
+      setVisible(true)
+      toast.success(apiKey ? 'API 키가 재발급되었습니다.' : 'API 키가 발급되었습니다.')
+    } catch {
+      toast.error('API 키 발급에 실패했습니다.')
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  const handleCopy = () => {
+    if (!apiKey) return
+    navigator.clipboard.writeText(apiKey)
+      .then(() => toast.success('API 키가 복사되었습니다.'))
+      .catch(() => toast.error('복사에 실패했습니다.'))
+  }
+
+  const maskedKey = apiKey
+    ? apiKey.slice(0, 8) + '•'.repeat(apiKey.length - 8)
+    : null
+
+  return (
+    <div className="tab-form-wrap">
+      <h2 className="tab-title"><Key size={17} /> API 키</h2>
+      <p className="api-key-desc">
+        MCP 및 외부 도구 연동에 사용합니다. 노출 시 재발급하세요.
+      </p>
+
+      {loading ? (
+        <div className="tab-loading">불러오는 중...</div>
+      ) : (
+        <div className="api-key-box">
+          {apiKey ? (
+            <>
+              <div className="api-key-display">
+                <code className="api-key-value">
+                  {visible ? apiKey : maskedKey}
+                </code>
+                <div className="api-key-actions">
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => setVisible((v) => !v)}
+                    title={visible ? '숨기기' : '표시'}
+                  >
+                    {visible ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    onClick={handleCopy}
+                    title="복사"
+                  >
+                    <Copy size={15} />
+                  </button>
+                </div>
+              </div>
+              <button
+                className="btn btn-secondary btn-sm"
+                onClick={handleGenerate}
+                disabled={generating}
+              >
+                <RefreshCw size={14} />
+                {generating ? '재발급 중...' : '키 재발급'}
+              </button>
+            </>
+          ) : (
+            <div className="api-key-empty">
+              <p>발급된 API 키가 없습니다.</p>
+              <button
+                className="btn btn-primary"
+                onClick={handleGenerate}
+                disabled={generating}
+              >
+                <Key size={15} />
+                {generating ? '발급 중...' : 'API 키 발급'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

@@ -119,6 +119,14 @@ def run_migrations():
         # ── arena 관련 테이블 (create_all로 생성됨) ────────────────────────────
         logger.info("arenas / arena_messages / arena_votes 테이블 확인 완료")
 
+        # ── users 테이블에 api_key 컬럼 추가 ─────────────────────────────────
+        existing_user_cols2 = {c["name"] for c in inspector.get_columns("users")}
+        if "api_key" not in existing_user_cols2:
+            conn.execute(text(
+                "ALTER TABLE users ADD COLUMN api_key VARCHAR(64) UNIQUE"
+            ))
+            logger.info("users 테이블 api_key 컬럼 추가 완료")
+
         # ── notifications 테이블에 arena_id 컬럼 추가 (기존 테이블 대응) ──────
         existing_notif_cols = {c["name"] for c in inspector.get_columns("notifications")}
         if "arena_id" not in existing_notif_cols:
@@ -183,6 +191,80 @@ app.include_router(notifications.router, prefix="/api")
 app.include_router(reports.router, prefix="/api")
 app.include_router(wiki.router, prefix="/api")
 app.include_router(arena.router, prefix="/api")
+
+from fastapi import Response as FastAPIResponse
+from fastapi_mcp import FastApiMCP
+import fastapi_mcp.openapi.utils as _mcp_utils
+
+
+# ── MCP 인증 미들웨어 — /mcp 경로는 유효한 API 키 필요 ──────────────────────────
+@app.middleware("http")
+async def mcp_auth_middleware(request: Request, call_next):
+    if request.url.path.startswith("/mcp"):
+        api_key = request.headers.get("X-API-Key")
+        if not api_key:
+            return FastAPIResponse(
+                content='{"detail":"MCP 접근에는 X-API-Key 헤더가 필요합니다."}',
+                status_code=401,
+                media_type="application/json",
+            )
+        db = SessionLocal()
+        try:
+            from app.models.user import User as UserModel
+            user = db.query(UserModel).filter(
+                UserModel.api_key == api_key,
+                UserModel.is_active == True,
+            ).first()
+            if user is None:
+                return FastAPIResponse(
+                    content='{"detail":"유효하지 않은 API 키입니다."}',
+                    status_code=401,
+                    media_type="application/json",
+                )
+        finally:
+            db.close()
+    return await call_next(request)
+
+def _safe_resolve_schema_references(schema_part, reference_schema, _visited=None):
+    if _visited is None:
+        _visited = set()
+    schema_part = schema_part.copy()
+    if "$ref" in schema_part:
+        ref_path = schema_part["$ref"]
+        if ref_path.startswith("#/components/schemas/"):
+            model_name = ref_path.split("/")[-1]
+            if model_name not in _visited:
+                if "components" in reference_schema and "schemas" in reference_schema["components"]:
+                    if model_name in reference_schema["components"]["schemas"]:
+                        _visited = _visited | {model_name}
+                        ref_schema = reference_schema["components"]["schemas"][model_name].copy()
+                        schema_part.pop("$ref")
+                        schema_part.update(ref_schema)
+    for key, value in schema_part.items():
+        if isinstance(value, dict):
+            schema_part[key] = _safe_resolve_schema_references(value, reference_schema, _visited)
+        elif isinstance(value, list):
+            schema_part[key] = [
+                _safe_resolve_schema_references(item, reference_schema, _visited) if isinstance(item, dict) else item
+                for item in value
+            ]
+    return schema_part
+
+_mcp_utils.resolve_schema_references = _safe_resolve_schema_references
+
+# MCP에 노출할 태그 목록 (여기에 추가/제거하여 관리)
+# 제외된 태그: Admin, Users, Notifications, Reports, Upload, Emoticons
+MCP_INCLUDE_TAGS = [
+    "Posts",
+    "Comments",
+    "Wiki",
+    "Categories",
+    "Likes",
+    "Arena",
+]
+
+mcp = FastApiMCP(app, name="Community App", include_tags=MCP_INCLUDE_TAGS, headers=["authorization", "x-api-key"])
+mcp.mount_http()
 
 # 업로드된 이미지 정적 파일 서빙
 _uploads_dir = Path(__file__).parent.parent / "storage" / "uploads"

@@ -280,6 +280,58 @@
 
 .confirm-hint { font-size: 12px; color: var(--text-muted); font-weight: 400; }
 
+/* ── API 키 ──────────────────────────────────────── */
+.api-key-desc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.api-key-desc code {
+  background: var(--bg-hover);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--primary);
+}
+.api-key-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.api-key-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+}
+.api-key-value {
+  flex: 1;
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--text-primary);
+  word-break: break-all;
+  letter-spacing: 0.02em;
+}
+.api-key-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.api-key-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.api-key-empty p {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
 /* ── 반응형 ──────────────────────────────────────── */
 @media (max-width: 640px) {
   .profile-header-card { flex-direction: column; text-align: center; padding: 24px; }

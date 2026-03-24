@@ -36,8 +36,8 @@ export const adminDeleteComment = (commentId) =>
 
 // ─── 공지 등록 / 해제 ─────────────────────────────────────────────────────────
 
-export const toggleNotice = (postId, register) =>
-  client.patch(`/admin/posts/${postId}/notice`, { register }).then((r) => r.data)
+export const toggleNotice = (postId, is_notice) =>
+  client.patch(`/admin/posts/${postId}/notice`, { is_notice }).then((r) => r.data)
 
 // ─── 베스트 게시글 기준 설정 ──────────────────────────────────────────────────
 

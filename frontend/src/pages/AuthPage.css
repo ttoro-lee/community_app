@@ -84,6 +84,30 @@
 }
 .auth-link:hover { text-decoration: underline; }
 
+/* ── 아이디 중복 확인 ────────────────────────────────────────────────────── */
+.username-check-wrap {
+  display: flex;
+  gap: 8px;
+}
+.username-check-wrap .form-input {
+  flex: 1;
+}
+.btn-check-username {
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-size: 13px;
+  padding: 0 12px;
+}
+.username-check-msg {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  margin: 4px 0 0;
+}
+.username-check-msg.available { color: #16a34a; }
+.username-check-msg.taken { color: #ef4444; }
+
 /* ── 입력 에러 상태 ─────────────────────────────────────────────────────── */
 .input-error {
   border-color: #ef4444 !important;

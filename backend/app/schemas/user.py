@@ -84,3 +84,7 @@ class PasswordChange(BaseModel):
 
 class DeleteAccount(BaseModel):
     password: str
+
+
+class ApiKeyResponse(BaseModel):
+    api_key: str
