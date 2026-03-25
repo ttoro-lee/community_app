@@ -2,7 +2,7 @@
 
 FastAPI + PostgreSQL + React(Vite)로 구축된 풀스택 커뮤니티 플랫폼입니다.
 
-# claude code plagin
+# claude code plugin
 
 - code-review-graph : Claude Code 토큰 사용량을 최적화하는 로컬 지식 그래프
 
