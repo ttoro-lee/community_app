@@ -1,0 +1,199 @@
+.apple-list-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 0;
+}
+
+.apple-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.apple-list-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary, #1e293b);
+  margin: 0 0 6px 0;
+}
+
+.apple-list-desc {
+  font-size: 14px;
+  color: var(--text-secondary, #64748b);
+  margin: 0;
+}
+
+.apple-list-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--border, #e2e8f0);
+}
+
+.apple-tab {
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  background: none;
+  border: none;
+  color: var(--text-secondary, #64748b);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.apple-tab.active {
+  color: #3b82f6;
+  border-bottom-color: #3b82f6;
+}
+
+.apple-list-empty {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--text-secondary, #94a3b8);
+  font-size: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.mt-2 { margin-top: 8px; }
+
+.apple-room-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.apple-room-card {
+  background: var(--bg-card, #fff);
+  border: 1.5px solid var(--border, #e2e8f0);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.apple-room-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  border-color: #93c5fd;
+}
+
+.room-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.room-status {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.status-waiting {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.status-playing {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.status-finished {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.room-delete-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.room-delete-btn:hover { opacity: 1; }
+
+.room-card-body {
+  cursor: pointer;
+  flex: 1;
+}
+
+.room-creator {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary, #1e293b);
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.room-host-badge {
+  font-size: 10px;
+  background: #fef3c7;
+  color: #b45309;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.room-card-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--text-secondary, #64748b);
+}
+
+.room-card-meta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.room-enter-btn {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: opacity 0.15s;
+}
+
+.room-enter-btn.btn-primary {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.room-enter-btn.btn-primary:hover { background: #2563eb; }
+
+.room-enter-btn.btn-secondary {
+  background: var(--bg-secondary, #f1f5f9);
+  color: var(--text-secondary, #64748b);
+}
+
+.room-enter-btn.btn-secondary:hover { background: #e2e8f0; }

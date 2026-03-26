@@ -10,7 +10,8 @@ from app.core.config import settings
 from app.core.logging import setup_logging
 from app.db.database import Base, engine
 from app.routers import users, posts, comments, likes, categories, admin
-from app.routers import upload, emoticons, notifications, reports, wiki, arena
+from app.routers import upload, emoticons, notifications, reports, wiki, arena, apple_arena
+import app.models.apple_arena  # noqa: F401 — Base.metadata에 테이블 등록
 from app.services.category_service import seed_default_categories
 from app.services.admin_service import seed_super_admin
 from app.db.database import SessionLocal
@@ -119,6 +120,9 @@ def run_migrations():
         # ── arena 관련 테이블 (create_all로 생성됨) ────────────────────────────
         logger.info("arenas / arena_messages / arena_votes 테이블 확인 완료")
 
+        # ── apple_arena 관련 테이블 (create_all로 생성됨) ─────────────────────────
+        logger.info("apple_arena_rooms / apple_arena_players 테이블 확인 완료")
+
         # ── users 테이블에 api_key 컬럼 추가 ─────────────────────────────────
         existing_user_cols2 = {c["name"] for c in inspector.get_columns("users")}
         if "api_key" not in existing_user_cols2:
@@ -191,6 +195,7 @@ app.include_router(notifications.router, prefix="/api")
 app.include_router(reports.router, prefix="/api")
 app.include_router(wiki.router, prefix="/api")
 app.include_router(arena.router, prefix="/api")
+app.include_router(apple_arena.router, prefix="/api")
 
 from fastapi import Response as FastAPIResponse
 from fastapi_mcp import FastApiMCP

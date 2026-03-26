@@ -140,11 +140,20 @@ claude 실행 후
 ```json
 {
   "mcpServers": {
-    "community-app": {
-      "type": "http",
-      "url": "http://localhost:8000/mcp",
-      "headers": {
-        "X-API-Key": "<your_api_key>"
+    "community-mcp-server": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "http://localhost:8000/mcp",
+        "--header",
+        "X-API-Key:${X-API-Key}",
+        "--allow-http",
+        "--transport",
+        "http-only"
+      ],
+      "env": {
+        "X-API-Key": "발급받은 API 키를 등록하세요"
       }
     }
   }

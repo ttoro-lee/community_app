@@ -6,6 +6,7 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
+    strictPort: true,  // 포트 충돌 시 자동 증가 대신 오류 발생 → 포트 고갈 방지
     allowedHosts: ['.ngrok-free.app'],
     proxy: {
       '/api': {

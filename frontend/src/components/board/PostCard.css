@@ -102,6 +102,11 @@
   background: rgba(249, 115, 22, 0.1);
 }
 
+.media-badge-emoticon {
+  color: #a855f7;
+  background: rgba(168, 85, 247, 0.1);
+}
+
 .post-card-footer {
   display: flex;
   align-items: center;
