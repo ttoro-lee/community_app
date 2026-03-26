@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Heart, MessageCircle, Eye, Pin, ImageIcon, Video } from 'lucide-react'
+import { Heart, MessageCircle, Eye, Pin, ImageIcon, Video, Smile } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import './PostCard.css'
@@ -17,12 +17,15 @@ function parseContentPreview(content) {
   const lines = content.split('\n')
   const textParts = []
   let imageCount = 0
+  let emoticonCount = 0
   const videoLabels = []
 
   for (const line of lines) {
     const trimmed = line.trim()
     if (trimmed.startsWith('[image:') && trimmed.endsWith(']')) {
       imageCount++
+    } else if (trimmed.startsWith('[emoticon:') && trimmed.endsWith(']')) {
+      emoticonCount++
     } else {
       const label = getVideoLabel(trimmed)
       if (label) {
@@ -34,7 +37,7 @@ function parseContentPreview(content) {
   }
 
   const textPreview = textParts.join(' ').replace(/[#*`>\-\[\]]/g, '').slice(0, 120)
-  return { textPreview, imageCount, videoLabels }
+  return { textPreview, imageCount, emoticonCount, videoLabels }
 }
 
 export default function PostCard({ post }) {
@@ -43,8 +46,8 @@ export default function PostCard({ post }) {
     locale: ko,
   })
 
-  const { textPreview, imageCount, videoLabels } = parseContentPreview(post.content)
-  const hasMedia = imageCount > 0 || videoLabels.length > 0
+  const { textPreview, imageCount, emoticonCount, videoLabels } = parseContentPreview(post.content)
+  const hasMedia = imageCount > 0 || emoticonCount > 0 || videoLabels.length > 0
 
   return (
     <article className={`post-card fade-in ${post.is_pinned ? 'pinned' : ''}`}>
@@ -77,6 +80,12 @@ export default function PostCard({ post }) {
               <span className="media-badge media-badge-image">
                 <ImageIcon size={11} />
                 사진{imageCount > 1 ? ` ${imageCount}장` : ''}
+              </span>
+            )}
+            {emoticonCount > 0 && (
+              <span className="media-badge media-badge-emoticon">
+                <Smile size={11} />
+                이모티콘{emoticonCount > 1 ? ` ${emoticonCount}개` : ''}
               </span>
             )}
             {videoLabels.map((label) => (

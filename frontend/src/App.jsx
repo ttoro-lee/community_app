@@ -17,6 +17,8 @@ import WikiEditPage from './pages/WikiEditPage'
 import WikiHistoryPage from './pages/WikiHistoryPage'
 import ArenaListPage from './pages/ArenaListPage'
 import ArenaDetailPage from './pages/ArenaDetailPage'
+import AppleArenaListPage from './pages/AppleArenaListPage'
+import AppleArenaRoomPage from './pages/AppleArenaRoomPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -59,6 +61,8 @@ export default function App() {
               <Route path="/wiki/:wikiId/history" element={<WikiHistoryPage />} />
               <Route path="/arena" element={<ArenaListPage />} />
               <Route path="/arena/:arenaId" element={<ArenaDetailPage />} />
+              <Route path="/apple-arena" element={<AppleArenaListPage />} />
+              <Route path="/apple-arena/:roomId" element={<AppleArenaRoomPage />} />
             </Route>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
