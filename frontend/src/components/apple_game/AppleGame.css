@@ -31,10 +31,18 @@
 
 .apple-board {
   display: grid;
-  grid-template-columns: repeat(17, var(--cell, 42px));
-  grid-template-rows: repeat(10, var(--cell, 42px));
+  grid-template-columns: repeat(17, var(--cell, 36px));
+  grid-template-rows: repeat(10, var(--cell, 36px));
   gap: 2px;
   cursor: crosshair;
+  background: #1e293b;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .apple-board.inactive {
@@ -43,16 +51,48 @@
 }
 
 .apple-cell {
-  width: var(--cell, 42px);
-  height: var(--cell, 42px);
-  border-radius: 8px;
-  background: var(--col, #dbeafe);
+  width: var(--cell, 36px);
+  height: var(--cell, 36px);
+  /* 사과 모양: 아래쪽이 약간 넓은 타원형 */
+  border-radius: 42% 42% 46% 46% / 40% 40% 58% 58%;
+  background:
+    radial-gradient(ellipse at 38% 28%, rgba(255,255,255,0.22) 0%, transparent 55%),
+    #dc2626;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   transition: transform 0.05s, opacity 0.15s;
   border: 2px solid transparent;
+  overflow: visible;
+}
+
+/* 사과 꼭지 (줄기) */
+.apple-cell:not(.empty)::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  transform: translateX(-50%) rotate(8deg);
+  width: 3px;
+  height: 8px;
+  background: #713f12;
+  border-radius: 2px;
+  z-index: 2;
+}
+
+/* 사과 잎 */
+.apple-cell:not(.empty)::after {
+  content: '';
+  position: absolute;
+  top: -7px;
+  left: calc(50% + 2px);
+  width: 10px;
+  height: 6px;
+  background: #16a34a;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-30deg);
+  z-index: 1;
 }
 
 .apple-cell:not(.empty):hover {
@@ -66,14 +106,14 @@
 }
 
 .apple-cell.rect-invalid {
-  border-color: rgba(239, 68, 68, 0.5);
-  background: color-mix(in srgb, var(--col, #dbeafe) 80%, #ef4444 20%);
+  border-color: rgba(239, 68, 68, 0.7);
+  filter: brightness(0.82);
 }
 
 .apple-cell.rect-valid {
-  border-color: rgba(34, 197, 94, 0.7);
-  background: color-mix(in srgb, var(--col, #dbeafe) 70%, #22c55e 30%);
-  box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+  border-color: rgba(34, 197, 94, 0.9);
+  filter: brightness(1.12);
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.55);
 }
 
 .apple-cell.empty.rect-valid,
@@ -81,10 +121,11 @@
   background: rgba(148, 163, 184, 0.12);
   border-color: rgba(148, 163, 184, 0.25);
   box-shadow: none;
+  filter: none;
 }
 
 .apple-num {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 800;
   color: #fff;
   text-shadow: 0 1px 3px rgba(0,0,0,0.4);
@@ -96,13 +137,20 @@
   grid-template-columns: repeat(17, 16px);
   grid-template-rows: repeat(10, 16px);
   gap: 1px;
+  padding: 6px;
+  border-radius: 8px;
 }
 
 .apple-board.mini .apple-cell {
   width: 16px;
   height: 16px;
-  border-radius: 3px;
+  border-radius: 50%;
   border-width: 1px;
+}
+
+.apple-board.mini .apple-cell::before,
+.apple-board.mini .apple-cell::after {
+  display: none;
 }
 
 .apple-board.mini .apple-num {
