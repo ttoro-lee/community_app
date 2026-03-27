@@ -5,17 +5,6 @@ const ROWS = 10
 const COLS = 17
 const TARGET = 10
 
-const COLORS = {
-  1: '#ef4444',
-  2: '#f97316',
-  3: '#eab308',
-  4: '#22c55e',
-  5: '#10b981',
-  6: '#06b6d4',
-  7: '#3b82f6',
-  8: '#8b5cf6',
-  9: '#ec4899',
-}
 
 export default function AppleGame({
   initialBoard,
@@ -153,7 +142,6 @@ export default function AppleGame({
                   inRect ? (isValid ? 'rect-valid' : 'rect-invalid') : '',
                   inSel ? 'selected' : '',
                 ].join(' ')}
-                style={!isEmpty ? { '--col': COLORS[v] } : {}}
                 onMouseDown={(e) => {
                   if (readOnly || !isActive) return
                   e.preventDefault()
